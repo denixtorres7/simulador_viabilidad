@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulador de Viabilidad Creativa V2</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    :root{
+      --fondo:#f4f6f9;--tarjeta:#fff;--texto:#0b2540;--muted:#617184;--linea:#d6dee8;
+      --azul:#003f73;--teal:#002b5b;--verde:#005b96;--naranja:#f4a261;--rojo:#e76f51;
+      --sombra:0 16px 36px rgba(11,37,64,.08);--radio:22px;
+    }
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:radial-gradient(circle at top left,rgba(0,43,91,.08),transparent 32%),var(--fondo);color:var(--texto);line-height:1.5}
+    header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--linea)}
+    .topbar{width:min(1180px,94%);margin:auto;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:8px 0}.title h1{margin:0;font-size:clamp(1.1rem,2vw,1.9rem);text-transform:uppercase}.title p{margin:1px 0 0;color:var(--muted);font-size:.82rem}.autosave{padding:5px 8px;border-radius:14px;background:#edf4fb;color:#003f73;font-weight:900;font-size:.7rem;border:1px solid #c8d8ea}.autosave.pending{background:#fff7e8;color:#9a5a00;border-color:#ffd796}
+    .nav{position:fixed;left:14px;top:110px;width:210px;display:flex;flex-direction:column;gap:8px;padding:12px;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);border:1px solid var(--linea);border-radius:22px;box-shadow:var(--sombra);z-index:40}.nav button{width:100%;min-height:46px;padding:10px 14px;border:1px solid var(--linea);background:#fff;color:var(--texto);border-radius:18px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:flex-start;gap:8px;transition:.2s}.nav button:hover{transform:translateY(-1px);border-color:var(--teal);background:#f3f7fb}.nav button.active{background:var(--teal);color:#fff;border-color:var(--teal)}.nav-step-number{width:28px;height:28px;border-radius:50%;background:var(--teal);color:#fff;display:grid;place-items:center;font-size:.82rem;font-weight:900;flex-shrink:0}.nav button.active .nav-step-number{background:rgba(255,255,255,.2)}.teacher-only{display:none}.mobile-nav-toggle{display:none;width:100%;margin-top:10px;background:var(--texto);color:#fff;border-radius:14px;border:0;min-height:40px;font-weight:900}
+    main{width:min(1180px,calc(100% - 270px));margin:18px 18px 70px auto}.page{display:none}.page.active{display:block}.card{background:var(--tarjeta);border:1px solid var(--linea);border-radius:var(--radio);box-shadow:var(--sombra);padding:22px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}.two{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(340px,.85fr);gap:22px;align-items:start}.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:22px;align-items:center}h2{margin-top:0;font-size:1.55rem}h3{margin-bottom:8px;font-size:1.08rem}p{margin-top:0}.small{font-size:.8rem;color:var(--muted);line-height:1.35}.small-note{font-size:.76rem;color:#7b8794;line-height:1.35;margin-top:4px;display:block}.soft-feedback{margin-top:8px;padding:9px 12px;border-radius:12px;font-size:.78rem;border-left:4px solid #c7d2de;background:#f8fafc;color:#52606d}
+    input,select,textarea,button{font:inherit}input,select,textarea{width:100%;min-height:48px;border:1px solid #ccd6e0;border-radius:14px;padding:11px 13px;background:#fff}textarea{min-height:130px;resize:vertical}label{display:grid;gap:6px;font-size:.9rem;font-weight:800}button{border:0;border-radius:14px;background:var(--texto);color:#fff;min-height:50px;padding:11px 14px;font-weight:900;cursor:pointer}button.secondary{background:var(--azul)}button.good{background:var(--verde)}button.danger{background:var(--rojo)}button.light{background:#edf2f7;color:var(--texto)}.feedback{margin-top:10px;padding:14px;border-radius:16px;border-left:8px solid #9aa7b2;background:#f6f8fa;font-weight:750}.feedback.red{border-color:var(--rojo);background:#fff3f1}.feedback.orange{border-color:var(--naranja);background:#fff8f0}.feedback.blue{border-color:var(--azul);background:#edf3f9}.feedback.green{border-color:var(--verde);background:#edf4fb}.tip{padding:10px 12px;border-radius:18px;background:#edf4fb;border-left:8px solid var(--teal);margin-top:14px}.role-card{border:1px solid var(--linea);padding:18px;border-radius:18px;text-align:center;background:#fff;color:var(--texto)}.role-card.active{outline:3px solid rgba(0,63,115,.18);border-color:var(--verde)}.student-row{display:grid;grid-template-columns:1.3fr 1fr auto;gap:8px;align-items:center;margin-bottom:8px}.student-row button{min-height:42px;padding:8px 10px}.progress-wrap{height:12px;background:#e9eef5;border-radius:999px;overflow:hidden}.progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--verde),var(--azul));transition:.3s}.membrete{min-height:120px;border:2px dashed #b8c1cc;border-radius:18px;display:grid;place-items:center;text-align:center;background:#fff;color:#64748b;margin:16px 0;padding:16px}table{width:100%;border-collapse:collapse;margin-top:12px}th,td{border-bottom:1px solid #edf2f7;padding:10px;text-align:left;vertical-align:top}th{background:var(--texto);color:#fff}.scroll{overflow:auto}.placeholder-note{background:#fffaf0;border:1px dashed #f4a261;border-radius:16px;padding:14px;color:#7c4a03;margin-top:14px;font-weight:750}
+    @media(max-width:980px){.nav{position:relative;left:auto;top:auto;width:min(1180px,94%);margin:8px auto;flex-direction:row;flex-wrap:wrap}.nav button{width:auto}main{width:min(1180px,94%);margin:18px auto 70px}.two,.hero{grid-template-columns:1fr}}@media(max-width:520px){.title p:last-child{display:none}.mobile-nav-toggle{display:block}.nav{display:none;flex-direction:column}.nav.mobile-open{display:flex}.nav button{width:100%}.card{padding:16px}.student-row{grid-template-columns:1fr}}
+    .hero-illustration{
+  width:100%;
+  max-width:320px;
+  height:auto;
+  object-fit:contain;
+  display:block;
+  margin:auto;
+}
+
+.membrete{
+  overflow:hidden;
+}
+
+.membrete img{
+  max-width:100%;
+  max-height:110px;
+  object-fit:contain;
+  display:block;
+  margin:auto;
+}
+body:not(.logged-in) #navTabs button:not([data-page="home"]){
+  display:none;
+}
+body:not(.logged-in) .page:not(#page-home){display:none!important;}
+.logo-visible{display:grid;}
+  </style>
+</head>
+<body>
+<header><div class="topbar"><div class="title"><h1>Simulador de Viabilidad Creativa</h1><p>Herramienta pedagógica para industrias creativas y culturales</p><p style="font-weight:800;color:var(--teal)">Desarrollado por Typometiz · Denize Asceneth Torres Ruiz</p></div><div id="autosaveStatus" class="autosave">Guardado automático</div></div><div style="width:min(1180px,94%);margin:auto;padding-bottom:10px"><button id="mobileMenuBtn" class="mobile-nav-toggle">Menú de navegación</button></div></header>
+<nav class="nav no-print" id="navTabs"><button data-page="home" class="active"><span class="nav-step-number">1</span>Inicio</button><button data-page="costos"><span class="nav-step-number">2</span>Costos</button><button data-page="nomina"><span class="nav-step-number">3</span>Nómina</button><button data-page="proyectos"><span class="nav-step-number">4</span>Proyecto</button><button data-page="balanza"><span class="nav-step-number">5</span>Balanza</button><button data-page="legal"><span class="nav-step-number">6</span>Legal</button><button data-page="campana"><span class="nav-step-number">7</span>Campaña</button><button data-page="resultado" class="teacher-only"><span class="nav-step-number">8</span>Resultado</button><button data-page="trazabilidad" class="teacher-only"><span class="nav-step-number">9</span>Trazabilidad</button><button data-page="avances" class="teacher-only"><span class="nav-step-number">10</span>Avances</button><button data-page="docente" class="teacher-only"><span class="nav-step-number">11</span>Docente</button></nav>
+<main>
+<section id="page-home" class="page active"><div class="two"><div class="card"><div class="hero"><div><h2>Convierte tu idea en un proyecto viable</h2><p>Aprende a estructurar proyectos creativos sostenibles, cobrar lo justo, proteger tu trabajo y presentar resultados con impacto.</p></div><div class="membrete">
+  <img src="img/portada.png" class="hero-illustration" alt="Portada simulador">
+</div></div></div><div class="card"><h2>Inicia sesión para continuar</h2><p class="small">Para avanzar debes iniciar sesión. Estudiante y docente usan acceso controlado.</p><div class="grid"><button type="button" class="role-card active" data-role="estudiante"><strong>Soy estudiante</strong><br><span class="small">Acceder a mi proyecto</span></button><button type="button" class="role-card" data-role="docente"><strong>Soy docente</strong><br><span class="small">Evaluar proyectos</span></button></div><div class="grid" style="margin-top:14px"><label>Número de documento / clave docente<input id="cedulaUsuario" type="password" placeholder="" autocomplete="off"></label><label>Rol detectado<input id="rolDetectado" readonly value="Estudiante"></label></div><h3>Datos del proyecto</h3><label>Nombre del proyecto / Agencia / Estudio<input id="nombreAgencia" type="text" placeholder="Ej. Estudio Aurora"></label><h3>Integrantes del grupo</h3><div id="listaIntegrantes"></div><button type="button" class="light" data-action="agregar-integrante">+ Agregar integrante</button><div class="grid" style="margin-top:14px"><label>Curso / Asignatura<input id="cursoGrupo" type="text"></label><label>Periodo académico<input id="periodoGrupo" type="text"></label></div><button type="button" class="good" style="margin-top:14px" data-action="ingresar">Entrar al simulador</button><div id="feedbackLogin" class="feedback blue">Tu información se guarda automáticamente en este navegador.</div><h3>Progreso actual</h3><div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div><p class="small"><span id="progressText">0%</span> completado</p></div></div></section>
+<section id="page-costos" class="page card"><h2>1. Costos de operación</h2><div class="grid"><label>Tipo de costo<select id="tipoCosto"><option value="fijo">Costo fijo operativo</option><option value="variable">Costo variable operativo</option><option value="unico">Costo único / inversión</option></select></label><label>Categoría<select id="categoriaCosto"><option>Software</option><option>Servicios públicos</option><option>Internet</option><option>Hosting / Dominio</option><option>IA</option><option>Producción</option><option>Equipos</option><option>Marketing</option><option>Coworking</option><option>Otro</option></select></label><label>Nombre del costo<input id="nombreCosto" type="text"></label><label>Valor mensual o unitario<input id="valorCosto" type="text" inputmode="numeric"></label><label>Imprevistos (%)<input id="imprevistoCosto" type="number" value="10"></label></div><div class="grid" style="margin-top:14px"><button type="button" class="good" data-action="agregar-costo">Agregar costo</button><button type="button" class="secondary" data-action="pdf-costos">Bajar PDF costos</button><button type="button" class="danger" data-action="borrar-todos-costos">Borrar todos los costos</button></div><div id="feedbackCostos" class="feedback blue">Registra todos los costos necesarios para operar tu proyecto creativo.</div><div class="scroll"><table><thead><tr><th>Tipo</th><th>Categoría</th><th>Nombre</th><th>Valor</th><th>Imprevistos</th><th>Total</th><th>Acciones</th></tr></thead><tbody id="tablaCostos"></tbody></table></div><div class="grid" style="margin-top:18px"><div class="feedback green"><strong>Total costos fijos:</strong><br><span id="totalCostosFijos">$0</span></div><div class="feedback orange"><strong>Total costos variables:</strong><br><span id="totalCostosVariables">$0</span></div><div class="feedback blue"><strong>Inversión inicial:</strong><br><span id="totalCostosUnicos">$0</span></div><div class="feedback orange"><strong>Operación anual:</strong><br><span id="operacionAnual">$0</span></div><div class="feedback blue"><strong>Capital mínimo recomendado:</strong><br><span id="capitalMinimoOperacion">$0</span></div><div class="feedback green"><strong>Capital recomendado ideal:</strong><br><span id="capitalIdealOperacion">$0</span></div></div></section>
+<section id="page-nomina" class="page card"><h2>2. Nómina</h2><div class="grid"><label>Cargo<input id="cargoNomina" type="text"></label><label>Tipo de vinculación<select id="tipoVinculacion"><option value="laboral">Contrato laboral</option><option value="prestacion">Prestación de servicios</option><option value="freelance">Freelance</option><option value="aprendiz">Aprendizaje</option></select></label><label>Salario / pago base<input id="salarioNomina" type="text" inputmode="numeric"></label><label>Cantidad personas<input id="cantidadNomina" type="number" value="1"></label><label>Salario mínimo<input id="salarioMinimo" type="text" inputmode="numeric" value="1.300.000"></label><label>Subsidio transporte<input id="subsidioTransporte" type="text" inputmode="numeric" value="162.000"></label><label>¿Aplica subsidio?<select id="aplicaSubsidio"><option value="auto">Automático</option><option value="si">Sí</option><option value="no">No</option></select></label><label>Nivel de riesgo ARL<select id="nivelARL"><option value="0.00522">Riesgo I</option><option value="0.01044">Riesgo II</option><option value="0.02436">Riesgo III</option><option value="0.04350">Riesgo IV</option><option value="0.06960">Riesgo V</option></select></label></div><div class="grid" style="margin-top:14px"><button type="button" class="good" data-action="agregar-nomina">Agregar nómina</button><button type="button" class="secondary" data-action="sincronizar-nomina-costos">Enviar nómina a costos</button><button type="button" class="secondary" data-action="pdf-nomina">Bajar PDF nómina</button><button type="button" class="danger" data-action="borrar-toda-nomina">Borrar nómina</button></div><div id="feedbackNomina" class="feedback blue">La app calculará automáticamente prestaciones, ARL y valor hora.</div><div class="scroll"><table><thead><tr><th>Cargo</th><th>Vinculación</th><th>Base</th><th>Costo real empresa</th><th>Valor hora</th><th>Acciones</th></tr></thead><tbody id="tablaNomina"></tbody></table></div><div class="grid" style="margin-top:18px"><div class="feedback green"><strong>Total mensual nómina:</strong><br><span id="totalNominaMensual">$0</span></div><div class="feedback blue"><strong>Total anual nómina:</strong><br><span id="totalNominaAnual">$0</span></div></div></section>
+<section id="page-proyectos" class="page card"><h2>3. Calculadora de proyecto</h2><p class="small">Nómina y software se calculan por horas. También puedes agregar materiales y proveedores.</p><div class="grid"><label>Nombre del proyecto<input id="nombreProyecto" type="text"></label><label>Tipo de proyecto<select id="tipoProyecto"><option>Servicio creativo</option><option>Producto</option><option>Campaña</option><option>Consultoría</option></select></label><label>Cargo desde nómina<select id="rolProyecto"><option value="manual">Valor manual</option></select></label><label>Horas de trabajo<input id="horasProyecto" type="number" value="20"></label><label>Valor hora manual<input id="valorHoraManual" type="text" inputmode="numeric" value="45.000"></label><label>Software a usar<select id="softwareProyecto"><option value="todos">Todos los softwares registrados</option></select></label><label>Horas de software<input id="horasSoftware" type="number" value="20"></label><label>Utilidad sugerida (%)<input id="utilidadProyecto" type="number" value="35"><span class="small-note">Sugerido: 30%–45% para servicios creativos.</span></label></div><h3>Materiales, proveedores o producción</h3><div class="grid"><label>Concepto<input id="materialConcepto" type="text"></label><label>Cantidad<input id="materialCantidad" type="number" value="1"></label><label>Valor unitario<input id="materialValor" type="text" inputmode="numeric"></label></div><div class="grid" style="margin-top:14px"><button type="button" class="good" data-action="agregar-material">Agregar material</button><button type="button" class="secondary" data-action="calcular-proyecto">Calcular precio del proyecto</button><button type="button" class="secondary" data-action="pdf-proyecto">Bajar PDF proyecto</button><button type="button" class="danger" data-action="borrar-materiales">Borrar materiales</button></div><div id="feedbackUtilidad" class="soft-feedback">Utilidad sugerida: 30%–45%. Cubre tiempos no facturables, ajustes, imprevistos, impuestos y sostenibilidad.</div><div id="feedbackProyecto" class="feedback blue">Completa los datos del proyecto para obtener un precio sugerido.</div><div class="scroll"><table><thead><tr><th>Tipo</th><th>Concepto</th><th>Cantidad / horas</th><th>Valor</th><th>Total</th><th>Acciones</th></tr></thead><tbody id="tablaProyecto"></tbody></table></div><div class="grid" style="margin-top:18px"><div class="feedback blue"><strong>Costo nómina:</strong><br><span id="costoNominaProyecto">$0</span></div><div class="feedback blue"><strong>Costo software:</strong><br><span id="costoSoftwareProyecto">$0</span></div><div class="feedback orange"><strong>Materiales / producción:</strong><br><span id="costoMaterialesProyecto">$0</span></div><div class="feedback green"><strong>Subtotal:</strong><br><span id="subtotalProyecto">$0</span></div><div class="feedback green"><strong>Precio sugerido:</strong><br><span id="precioSugeridoProyecto">$0</span></div><div class="feedback orange"><strong>Utilidad estimada:</strong><br><span id="gananciaProyecto">$0</span></div></div></section>
+<section id="page-balanza" class="page card"><h2>4. Balanza, punto de equilibrio y ecodiseño</h2><div class="grid"><div class="feedback blue"><strong>Operación mensual:</strong><br><span id="balanzaOperacion">$0</span></div><div class="feedback green"><strong>Precio del proyecto:</strong><br><span id="balanzaPrecio">$0</span></div><div class="feedback orange"><strong>Proyectos mínimos al mes:</strong><br><span id="balanzaProyectosMinimos">—</span></div><div class="feedback blue"><strong>Punto de equilibrio:</strong><br><span id="puntoEquilibrioTiempo">—</span></div></div><div id="balanzaWrap" style="margin:24px auto;max-width:560px;height:190px;position:relative;display:grid;place-items:center"><div id="barraBalanza" style="width:360px;max-width:90%;height:14px;border-radius:999px;background:var(--teal);transition:.35s;transform:rotate(0deg)"></div><div style="position:absolute;bottom:20px;width:80px;height:88px;background:var(--teal);border-radius:20px 20px 8px 8px"></div><div id="platoOperacion" style="position:absolute;left:8%;top:20px;width:130px;min-height:74px;border-radius:0 0 60px 60px;background:#eaf1fb;display:grid;place-items:center;text-align:center;font-weight:800;padding:8px;transition:.3s">Operación<br><span id="pesoOperacionVisual">$0</span></div><div id="platoTarifa" style="position:absolute;right:8%;top:20px;width:130px;min-height:74px;border-radius:0 0 60px 60px;background:#eaf1fb;display:grid;place-items:center;text-align:center;font-weight:800;padding:8px;transition:.3s">Tarifa<br><span id="pesoTarifaVisual">$0</span></div></div><canvas id="graficoEquilibrio" width="900" height="280" style="width:100%;background:#fff;border:1px solid var(--linea);border-radius:18px"></canvas><h3>Ecodiseño</h3><div class="grid"><label><input type="checkbox" class="eco-check"> Usa materiales reciclados o de bajo impacto</label><label><input type="checkbox" class="eco-check"> Reduce impresión, energía o desperdicio</label><label><input type="checkbox" class="eco-check"> Prioriza distribución digital o eficiente</label><label><input type="checkbox" class="eco-check"> Considera reutilización, durabilidad o ciclo de vida</label></div><div class="grid" style="margin-top:18px"><div class="feedback green"><strong>Puntaje ecodiseño:</strong><br><span id="puntajeEco">0 / 5</span></div><div class="feedback blue"><strong>Insignia ecológica:</strong><br><span id="insigniaEco">—</span></div><div class="feedback orange"><strong>Bono ecológico:</strong><br><span id="bonoEco">+0.0</span></div></div><div id="feedbackBalanza" class="feedback blue">Calcula el proyecto para activar la balanza.</div><div id="feedbackEco" class="feedback blue">Selecciona criterios de ecodiseño.</div></section>
+<section id="page-legal" class="page card"><h2>5. Legal, formalización y propiedad intelectual</h2><div class="grid"><label>Tipo de empresa<select id="tipoEmpresa"><option value="persona-natural">Persona natural</option><option value="sas">S.A.S. – Sociedad por Acciones Simplificada</option><option value="sa">S.A. – Sociedad Anónima</option><option value="ltda">Ltda. – Sociedad de Responsabilidad Limitada</option><option value="colectiva">Sociedad Colectiva</option><option value="comandita-simple">Sociedad en Comandita Simple</option><option value="comandita-acciones">Sociedad en Comandita por Acciones</option><option value="unipersonal">Empresa Unipersonal</option><option value="cooperativa">Cooperativa</option><option value="asociacion">Asociación</option><option value="fundacion">Fundación</option><option value="corporacion">Corporación</option><option value="emprendimiento">Emprendimiento informal temporal</option><option value="startup">Startup / emprendimiento de base tecnológica</option><option value="spin-off">Spin-off universitaria o empresarial</option><option value="empresa-ti">Empresa de desarrollo tecnológico / software</option><option value="plataforma-digital">Plataforma digital / marketplace</option><option value="empresa-ia">Empresa de inteligencia artificial o automatización</option><option value="empresa-bic">Sociedad BIC con componente tecnológico</option></select></label><label>Tipo de actividad<select id="actividadEmpresa"><option>Diseño gráfico</option><option>Publicidad</option><option>Software / aplicaciones</option><option>Plataformas digitales</option><option>Inteligencia artificial</option><option>Gestión cultural</option><option>Otro</option></select></label><label>Tipo de contratación principal<select id="tipoContratoLegal"><option>Prestación de servicios</option><option>Contrato laboral término fijo</option><option>Contrato laboral término indefinido</option><option>Contrato por obra o labor</option><option>Freelance por proyecto</option><option>Contrato de confidencialidad (NDA)</option><option>Contrato de cesión de derechos</option><option>Contrato de licencia de uso</option><option>Contrato de producción</option><option>Contrato de desarrollo de software</option><option>Contrato SaaS / licencia de plataforma</option><option>Contrato de tratamiento de datos personales</option><option>Contrato de transferencia tecnológica</option></select></label></div><h3>Protección de propiedad intelectual</h3><div class="grid"><label><input type="checkbox" class="pi-check"> Registro de marca</label><label><input type="checkbox" class="pi-check"> Derechos de autor</label><label><input type="checkbox" class="pi-check"> Licencia de uso</label><label><input type="checkbox" class="pi-check"> Datos e imagen</label></div><div class="grid" style="margin-top:18px">
+  <button type="button" class="secondary" data-action="analizar-legal">Analizar viabilidad legal</button>
+  <button type="button" class="secondary" data-action="pdf-analisis-legal">Bajar PDF análisis legal</button>
+  <button type="button" class="good" data-action="generar-contrato">Generar contrato completo</button>
+  <button type="button" class="secondary" data-action="pdf-contrato-legal">Bajar PDF contrato</button>
+</div><div id="feedbackLegal" class="feedback blue">Completa la información para recibir recomendaciones.</div><div class="grid" style="margin-top:18px"><div class="feedback blue"><strong>Figura sugerida:</strong><br><span id="empresaSugerida">—</span></div><div class="feedback green"><strong>Nivel de formalización:</strong><br><span id="formalizacionLegal">—</span></div><div class="feedback orange"><strong>Protección PI:</strong><br><span id="proteccionPI">—</span></div></div><div id="resumenContratoLegal" class="soft-feedback" style="display:none"></div><h3>Datos mínimos para el contrato</h3><div class="grid"><label>Contratante / Cliente<input id="contratanteLegal" type="text"></label><label>Cédula / NIT contratante<input id="idContratanteLegal" type="text"></label><label>Dirección contratante<input id="direccionContratanteLegal" type="text"></label><label>Teléfono contratante<input id="telefonoContratanteLegal" type="text"></label><label>Contratista / Agencia<input id="contratistaLegal" type="text"></label><label>Cédula / NIT contratista<input id="idContratistaLegal" type="text"></label><label>Dirección contratista<input id="direccionContratistaLegal" type="text"></label><label>Teléfono contratista<input id="telefonoContratistaLegal" type="text"></label><label>Objeto del contrato<input id="objetoContratoLegal" type="text"></label><label>Valor del contrato<input id="valorContratoLegal" type="text" inputmode="numeric"></label><label>Duración / plazo<input id="plazoContratoLegal" type="text"></label><label>Ciudad<input id="ciudadContratoLegal" type="text" value="Bogotá D.C."></label></div><h3>Contrato generado</h3><div class="membrete" id="membreteLogoPreview">ESPACIO PARA LOGO / MEMBRETE DE LA AGENCIA</div><label class="logo-visible">Subir logo o membrete
+  <input class="logo-upload" type="file" accept="image/*">
+  <span class="small-note">Este logo se aplicará a contratos, cotizaciones y cheque creativo.</span>
+</label><label>Logo o membrete de la agencia<input id="logoAgenciaInput" type="file" accept="image/*"><span class="small-note">Opcional. Se usará como referencia visual.</span></label><textarea id="contratoGeneradoLegal" style="min-height:420px"></textarea><div class="soft-feedback">Esta herramienta tiene fines pedagógicos y no reemplaza asesoría jurídica profesional.</div></section>
+<section id="page-campana" class="page card"><h2>6. Campaña, cotización y cronograma</h2><p class="small">El cronograma corresponde a la implementación real de acciones de campaña.</p><div class="membrete" id="membreteCampanaPreview">ESPACIO PARA LOGO / MEMBRETE DE LA AGENCIA</div><label class="logo-visible">Subir logo o membrete
+  <input class="logo-upload" type="file" accept="image/*">
+  <span class="small-note">Este logo se aplicará a contratos, cotizaciones y cheque creativo.</span>
+</label><h3>Datos generales</h3><div class="grid"><label>Agencia / estudio<input id="agenciaCampana" type="text"></label><label>Cliente / empresa<input id="clienteCampana" type="text"></label><label>Producto o campaña<input id="productoCampana" type="text"></label><label>Tipo de campaña<select id="tipoCampana"><option>Digital</option><option>Impreso</option><option>Redes sociales</option><option>Evento</option><option>Transmedia</option><option>Branding</option><option>BTL</option></select></label><label>Nivel de complejidad<select id="complejidadCampana"><option>Baja</option><option>Media</option><option>Alta</option></select></label><label>Duración del proyecto (semanas)<input id="duracionProyecto" type="number" placeholder="1.0 - 5.0"></label></div><h3>Presupuesto de diseño</h3><div class="grid"><label>Horas estrategia<input id="horasEstrategiaCampana" type="number" value="8"></label><label>Horas diseño<input id="horasDisenoCampana" type="number" value="24"></label><label>Horas ajustes<input id="horasAjustesCampana" type="number" value="8"></label><label>Valor hora<input id="valorHoraCampana" type="text" inputmode="numeric" value="45.000"></label><label>Utilidad diseño (%)<input id="utilidadDisenoCampana" type="number" value="35"></label></div><h3>Costos base de producción</h3><div class="grid"><label>Producción gráfica<input id="produccionGraficaCampana" type="text" inputmode="numeric"></label><label>Pauta digital<input id="pautaDigitalCampana" type="text" inputmode="numeric"></label><label>Audiovisual<input id="audiovisualCampana" type="text" inputmode="numeric"></label><label>Tecnología<input id="tecnologiaCampana" type="text" inputmode="numeric"></label><label>Logística<input id="logisticaCampana" type="text" inputmode="numeric"></label><label>Otros proveedores<input id="otrosProveedoresCampana" type="text" inputmode="numeric"></label><label>Imprevistos producción (%)<input id="imprevistosProduccionCampana" type="number" value="10"></label></div><h3>Acciones de implementación</h3><p class="small">Ejemplo: estrategia de redes 5 semanas, BTL semana 7, pauta digital, evento de lanzamiento.</p><div class="grid"><label>Acción<input id="accionCampanaNombre" type="text"></label><label>Canal / medio<select id="accionCampanaCanal"><option>Redes sociales</option><option>BTL</option><option>Pauta digital</option><option>Evento</option><option>Mailing</option><option>Influencers</option><option>Audiovisual</option><option>Landing / web</option><option>Impresos</option><option>PR / prensa</option><option>Otro</option></select></label><label>Semana inicio<input id="accionCampanaInicio" type="number" value="1"></label><label>Duración semanas<input id="accionCampanaDuracion" type="number" value="1"></label><label>Costo estimado<input id="accionCampanaCosto" type="text" inputmode="numeric"></label></div><div class="grid" style="margin-top:14px"><button type="button" class="good" data-action="agregar-accion-campana">Agregar acción</button><button type="button" class="danger" data-action="borrar-acciones-campana">Borrar acciones</button></div><h3>Cronograma Gantt de implementación</h3><div class="grid"><label>Presupuesto máximo del cliente<input id="presupuestoClienteCampana" type="text" inputmode="numeric"></label><label>¿Cómo se implementará?<select id="modoImplementacionCampana"><option value="auto">Decisión automática según presupuesto</option><option value="completa">Implementación completa</option><option value="etapas">Implementación por etapas</option></select></label></div><div id="feedbackImplementacionCampana" class="feedback blue">La app analizará si el presupuesto permite ejecutar todas las acciones.</div><canvas id="graficoGanttCampana" width="1000" height="360" style="width:100%;background:#fff;border:1px solid var(--linea);border-radius:18px;margin-top:18px"></canvas><div class="scroll"><table><thead><tr><th>Acción</th><th>Canal</th><th>Inicio</th><th>Fin</th><th>Costo</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tablaGanttCampana"></tbody></table></div><div class="grid" style="margin-top:18px">
+  <button type="button" class="secondary" data-action="analizar-campana">Calcular campaña</button>
+  <button type="button" class="secondary" data-action="pdf-calculo-campana">Bajar PDF cálculos campaña</button>
+  <button type="button" class="good" data-action="generar-cotizacion-campana">Generar cotización cliente</button>
+  <button type="button" class="secondary" data-action="pdf-cotizacion-campana">Bajar PDF cotización</button>
+</div><div id="feedbackCampana" class="feedback blue">Completa los datos para calcular diseño, producción, implementación y cronograma.</div><div class="grid" style="margin-top:18px"><div class="feedback blue"><strong>Presupuesto diseño:</strong><br><span id="totalDisenoCampana">$0</span></div><div class="feedback orange"><strong>Producción / implementación:</strong><br><span id="totalProduccionCampana">$0</span></div><div class="feedback green"><strong>Total campaña:</strong><br><span id="totalGeneralCampana">$0</span></div><div class="feedback blue"><strong>Tiempo estimado:</strong><br><span id="estadoTiempo">—</span></div><div class="feedback orange"><strong>Riesgo de ejecución:</strong><br><span id="riesgoCampanaResultado">—</span></div><div class="feedback green"><strong>Estado del presupuesto:</strong><br><span id="estadoPresupuesto">—</span></div></div><h3>Cotización para el cliente</h3><div class="membrete" id="membreteCotizacionPreview">ESPACIO PARA LOGO / MEMBRETE DE LA AGENCIA</div><label class="logo-visible">Subir logo o membrete
+  <input class="logo-upload" type="file" accept="image/*">
+  <span class="small-note">Este logo se aplicará a contratos, cotizaciones y cheque creativo.</span>
+</label><textarea id="cotizacionCampanaGenerada" style="min-height:380px"></textarea></section>
+<section id="page-resultado" class="page card teacher-only"><h2>7. Resultado, evaluación e insignias</h2><p class="small">Fórmula: nota base = promedio del proceso × 30% + promedio del resultado × 70%. El bono ecológico suma máximo +0.5 únicamente si se seleccionan criterios de ecodiseño.</p><div class="grid"><div class="feedback blue"><strong>Proceso · 30%</strong><br>Investigación, cumplimiento, avances y participación.</div><div class="feedback green"><strong>Resultado final · 70%</strong><br>Viabilidad, coherencia, ejecución, costos y presentación.</div></div><h3>Proceso</h3><div class="grid"><label>Investigación<input id="notaProcesoInvestigacion" type="number" autocomplete="off" min="1" max="5" step="0.1" placeholder="1.0 - 5.0"></label><label>Seguimiento<input id="notaProcesoSeguimiento" type="number" autocomplete="off" min="1" max="5" step="0.1" placeholder="1.0 - 5.0"></label><label>Avances<input id="notaProcesoAvances" type="number" autocomplete="off" min="1" max="5" step="0.1" placeholder="1.0 - 5.0"></label></div><h3>Resultado final</h3><div class="grid"><label>Viabilidad financiera<input id="notaResultadoViabilidad" type="number" autocomplete="off" min="1" max="5" step="0.1" placeholder="1.0 - 5.0"></label><label>Estrategia<input id="notaResultadoEstrategia" type="number" autocomplete="off" min="1" max="5" step="0.1" placeholder="1.0 - 5.0"></label><label>Presentación<input id="notaResultadoPresentacion" type="number" autocomplete="off" min="1" max="5" step="0.1" placeholder="1.0 - 5.0"></label><label>Implementación<input id="notaResultadoImplementacion" type="number" autocomplete="off" min="1" max="5" step="0.1" placeholder="1.0 - 5.0"></label></div><div class="grid" style="margin-top:18px"><button type="button" class="secondary" data-action="calcular-rubrica">Calcular resultado final</button><button type="button" class="good" data-action="pdf-resultado">Bajar PDF resultado</button><button type="button" class="danger" data-action="limpiar-calificaciones">Limpiar calificaciones</button></div><div id="feedbackResultado" class="feedback blue">Completa las calificaciones.</div><div class="grid" style="margin-top:20px"><div class="feedback blue"><strong>Nota proceso:</strong><br><span id="resultadoProceso">0.0</span></div><div class="feedback green"><strong>Nota resultado:</strong><br><span id="resultadoFinalProyecto">0.0</span></div><div class="feedback orange"><strong>Nota definitiva:</strong><br><span id="resultadoDefinitivo">0.0</span></div></div><h3>Lectura pedagógica automática</h3><div id="comentarioAutomaticoResultado" class="soft-feedback">La app generará observaciones automáticas.</div><h3>Insignias finales</h3><div class="grid"><div class="feedback green"><strong>Viabilidad:</strong><br><span id="insigniaViabilidad">—</span></div><div class="feedback blue"><strong>Estrategia:</strong><br><span id="insigniaEstrategia">—</span></div><div class="feedback orange"><strong>Implementación:</strong><br><span id="insigniaImplementacion">—</span></div></div></section>
+<section id="page-trazabilidad" class="page card teacher-only"><h2>8. Trazabilidad, cierre y cheque creativo</h2><div class="grid"><div class="feedback blue"><strong>Estado del proyecto:</strong><br><span id="estadoProyectoFinal">Pendiente</span></div><div class="feedback green"><strong>Viabilidad general:</strong><br><span id="viabilidadProyectoFinal">—</span></div><div class="feedback orange"><strong>Nivel de implementación:</strong><br><span id="implementacionProyectoFinal">—</span></div></div><h3>Historial del proceso</h3><div class="scroll"><table><thead><tr><th>Módulo</th><th>Estado</th><th>Resultado principal</th></tr></thead><tbody id="tablaTrazabilidadProyecto"><tr><td>Costos</td><td>Pendiente</td><td>—</td></tr></tbody></table></div><div class="grid" style="margin-top:18px"><button type="button" class="secondary" data-action="actualizar-trazabilidad">Actualizar trazabilidad</button><button type="button" class="good" data-action="generar-cheque">Generar cheque creativo</button><button type="button" class="secondary" data-action="pdf-trazabilidad">Bajar PDF cierre</button><button type="button" class="danger" data-action="borrar-cheque">Borrar cheque</button></div><div id="feedbackTrazabilidad" class="feedback blue">Actualiza la trazabilidad para consolidar los resultados.</div><h3>Cheque de inversión creativa</h3><div id="chequeCreativo" style="display:none;background:linear-gradient(135deg,#f8fafc,#edf4fb);border:2px solid #b8c7d9;border-radius:28px;padding:26px;box-shadow:0 16px 34px rgba(11,37,64,.08);margin-top:18px"><h3 style="font-size:1.6rem;color:#002b5b">Cheque de inversión creativa</h3><div class="membrete" id="logoChequePreview">LOGO / MEMBRETE DE LA AGENCIA</div><label class="logo-visible">Subir logo o membrete
+  <input class="logo-upload" type="file" accept="image/*">
+  <span class="small-note">Este logo se aplicará a contratos, cotizaciones y cheque creativo.</span>
+</label><div style="font-size:.82rem;color:#617184">Proyecto / Agencia</div><div id="nombreChequeProyecto" style="font-size:1.5rem;font-weight:900">—</div><div class="grid" style="margin-top:20px"><div class="feedback green"><strong>Inversión proyectada</strong><br><span id="valorChequeInversion">$0</span></div><div class="feedback blue"><strong>Precio sugerido</strong><br><span id="valorChequeProyecto">$0</span></div><div class="feedback orange"><strong>Nota final</strong><br><span id="notaChequeProyecto">0.0</span></div></div><div class="soft-feedback" id="mensajeChequeProyecto">El simulador generará una lectura final.</div><div style="font-weight:900;color:#002b5b;margin-top:20px">© Typometiz · Denize Asceneth Torres Ruiz</div><div id="estadoChequeProyecto" style="font-size:1.15rem;font-weight:900;color:#166534">Proyecto viable</div></div></section>
+<section id="page-avances" class="page card teacher-only"><h2>9. Avances guardados y preparación de la app</h2><p class="small">Guarda respaldo, recupera avances, limpia pruebas y prepara la app para entrega o publicación.</p><div class="grid"><div class="feedback blue"><strong>Versión actual:</strong><br><span id="avanceVersionActual">V1</span></div><div class="feedback green"><strong>Último guardado:</strong><br><span id="avanceUltimoGuardado">—</span></div><div class="feedback orange"><strong>Estado de datos:</strong><br><span id="avanceEstadoDatos">En revisión</span></div></div><h3>Respaldo del proyecto</h3><div class="grid"><button type="button" class="secondary" data-action="descargar-json">Descargar respaldo JSON</button><button type="button" class="good" data-action="descargar-html-app">Descargar app HTML</button><button type="button" class="secondary" data-action="pdf-trazabilidad">Descargar informe final PDF</button></div><h3>Recuperar avance</h3><label>Subir respaldo JSON<input id="importarJsonInput" type="file" accept="application/json,.json"><span class="small-note">Carga el archivo JSON descargado previamente para restaurar el avance.</span></label><h3>Control de versión</h3><div class="grid"><button type="button" class="secondary" data-action="nueva-version">Crear nueva versión</button><button type="button" class="danger" data-action="limpiar-prueba">Limpiar datos de prueba</button></div><div id="feedbackAvances" class="feedback blue">Los avances se guardan automáticamente en este navegador.</div><h3>Conexión con Google Sheets</h3>
+<p class="small">https://script.google.com/macros/s/AKfycbyi3B9dfgNe_dvslrB-lnMBW6yQN9OsIgI8IA6X-PoDBBTIJ6jjeFfl1DuJn-AqF0oNeQ/exec</p>
+<div class="grid">
+  <label>URL de Apps Script Web App
+    <input id="appsScriptUrl" type="url" value="https://script.google.com/macros/s/AKfycbyi3B9dfgNe_dvslrB-lnMBW6yQN9OsIgI8IA6X-PoDBBTIJ6jjeFfl1DuJn-AqF0oNeQ/exec" placeholder="https://script.google.com/macros/s/.../exec">
+  </label>
+  <label>Estado de conexión
+    <input id="estadoGoogleSheets" readonly value="Sin conectar">
+  </label>
+</div>
+<div class="grid" style="margin-top:14px">
+  <button type="button" class="secondary" data-action="probar-google-sheets">Probar conexión</button>
+  <button type="button" class="good" data-action="enviar-google-sheets">Enviar trazabilidad a Google Sheets</button>
+</div>
+<div id="feedbackGoogleSheets" class="feedback blue">Cuando conectes Apps Script, la app podrá guardar evidencias de interacción en una hoja de cálculo.</div>
+
+<h3>Resumen técnico de entrega</h3><textarea id="resumenTecnicoApp" style="min-height:260px" readonly></textarea></section>
+<section id="page-docente" class="page card teacher-only"><h2>Panel docente</h2><p class="small">Consolidado docente del grupo.</p><div class="grid"><div class="feedback blue"><strong>Grupo / agencia:</strong><br><span id="docenteNombreGrupo">—</span></div><div class="feedback green"><strong>Nota definitiva:</strong><br><span id="docenteNotaFinal">0.0</span></div><div class="feedback orange"><strong>Estado:</strong><br><span id="docenteEstadoProyecto">Pendiente</span></div></div><h3>Integrantes</h3><div class="scroll"><table><thead><tr><th>Nombre</th><th>Documento</th></tr></thead><tbody id="docenteTablaIntegrantes"></tbody></table></div><h3>Rúbrica docente completa</h3><div class="scroll"><table><thead><tr><th>Componente</th><th>Peso</th><th>Indicador</th><th>Nota</th><th>Lectura</th></tr></thead><tbody id="docenteTablaRubrica"></tbody></table></div><h3>Observaciones docentes</h3><textarea id="observacionesDocente"></textarea><div class="grid" style="margin-top:18px"><button type="button" class="secondary" data-action="actualizar-panel-docente">Actualizar panel docente</button><button type="button" class="good" data-action="generar-informe-docente">Generar informe</button><button type="button" class="secondary" data-action="pdf-docente">Bajar PDF docente</button><button type="button" class="danger" data-action="limpiar-informe-docente">Limpiar informe</button></div><div id="feedbackDocente" class="feedback blue">Actualiza el panel para consolidar la evaluación.</div><h3>Informe para estudiantes</h3><textarea id="informeDocenteGenerado" style="min-height:340px"></textarea></section>
+</main><footer style="width:min(1180px,94%);margin:40px auto 30px;padding:18px 24px;border-top:1px solid var(--linea);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:.9rem"><div>© Typometiz · Denize Asceneth Torres Ruiz</div><div>Simulador de Viabilidad Creativa V2 · Uso pedagógico y académico</div></footer>
+<script>
+
+(function(){
+'use strict';
+const STORAGE_KEY='typometiz_simulador_v12_base';
+const DOCENTE_KEY='Tr1c3r4t0$';
+const DEV_KEY='Tr1c3r4t0$';
+const $=id=>document.getElementById(id);
+const qsa=sel=>Array.from(document.querySelectorAll(sel));
+const defaultState={version:1,role:'estudiante',loggedIn:false,fields:{},integrantes:[{nombre:'',cedula:''}],costos:[],nomina:[],materiales:[],accionesCampana:[],logoAgencia:'',precioProyecto:0,operacionMensual:0,balanceScore:0,ecoScore:0,bonoEco:0,progreso:0,notaBase:null,notaFinal:null,lastSaved:'',sessionRole:''};
+let state=loadState();
+state.loggedIn=false;
+state.role='estudiante';
+let sessionDocumento='';
+let saveTimer=null;
+const costos=Array.isArray(state.costos)?state.costos:[];
+const nomina=Array.isArray(state.nomina)?state.nomina:[];
+const materiales=Array.isArray(state.materiales)?state.materiales:[];
+const accionesCampana=Array.isArray(state.accionesCampana)?state.accionesCampana:[];
+function loadState(){try{return Object.assign({},defaultState,JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'));}catch(e){return Object.assign({},defaultState);}}
+function formatoCOP(v){return new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0}).format(Number(v||0));}
+function formatoNumero(v){return new Intl.NumberFormat('es-CO',{maximumFractionDigits:0}).format(Number(v||0));}
+function limpiarNumero(v){return Number(String(v||'').replace(/\./g,'').replace(/,/g,'').replace(/[^0-9]/g,''))||0;}
+function aplicarFormatoMonedaInput(input){if(!input)return;const n=limpiarNumero(input.value);input.value=n?formatoNumero(n):'';}
+function escapeHTML(v){return String(v||'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+function setFeedback(id,color,text){const el=$(id);if(!el)return;el.className='feedback '+color;el.textContent=text;}
+function setAutosave(text,pending){const el=$('autosaveStatus');if(!el)return;el.textContent=text;el.classList.toggle('pending',!!pending);}
+function getAllFields(){const data={};qsa('input,select,textarea').forEach(el=>{if(el.id&&el.type!=='file'&&el.id!=='cedulaUsuario')data[el.id]=el.value;});return data;}
+function restoreFields(){Object.entries(state.fields||{}).forEach(([id,value])=>{if(id==='cedulaUsuario')return;const el=$(id);if(el)el.value=value;});if($('cedulaUsuario'))$('cedulaUsuario').value='';}if(state.fields&&state.fields.cedulaUsuario){delete state.fields.cedulaUsuario;localStorage.setItem(STORAGE_KEY,JSON.stringify(state));}
+if(state.loggedIn && state.sessionRole){
+  document.body.classList.add('logged-in');
+}else{
+  state.loggedIn=false;
+  state.sessionRole='';
+  document.body.classList.remove('logged-in');
+}
+function slug(text){return String(text||'agencia').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'_').replace(/^_|_$/g,'').toLowerCase()||'agencia';}
+
+function autoSave(){setAutosave('Guardando cambios...',true);clearTimeout(saveTimer);saveTimer=setTimeout(()=>saveState(true),350);}
+function showPage(page){
+  const teacherPages=['docente','resultado','trazabilidad','avances'];
+  const isTeacherPage=teacherPages.includes(page);
+
+  if(page!=='home' && (!state.loggedIn || !state.sessionRole)){
+    setFeedback('feedbackLogin','orange','Primero inicia sesión para activar el simulador.');
+    page='home';
+  }
+
+  if(isTeacherPage && (!state.loggedIn || state.sessionRole!=='docente')){
+    setFeedback('feedbackLogin','orange','Esta sección es solo para docente. Ingresa con la clave docente.');
+    page='home';
+  }
+
+  qsa('.page').forEach(p=>p.classList.remove('active'));
+  qsa('.nav button').forEach(b=>b.classList.remove('active'));
+
+  const target=$('page-'+page);
+  if(target)target.classList.add('active');
+
+  const btn=document.querySelector('[data-page="'+page+'"]');
+  if(btn)btn.classList.add('active');
+
+  if(window.innerWidth<=520){$('navTabs')?.classList.remove('mobile-open');}
+  saveState(false);
+
+  setTimeout(()=>{
+    const header=document.querySelector('header');
+    const offset=header?header.offsetHeight+12:0;
+    const top=target?target.getBoundingClientRect().top+window.scrollY-offset:0;
+    window.scrollTo({top:Math.max(0,top),behavior:'smooth'});
+  },30);
+}
+
+function applyRole(){
+  const isTeacherSession = state.loggedIn && state.sessionRole==='docente';
+  qsa('.teacher-only').forEach(el=>el.style.display=isTeacherSession?'':'none');
+
+  const roleField=$('rolDetectado');
+  if(roleField) roleField.value=state.role==='docente'?'Docente':'Estudiante';
+}
+
+function cerrarSesionPorCambioRol(nuevoRol){
+  state.role=nuevoRol;
+  state.loggedIn=false;
+  state.sessionRole='';
+  document.body.classList.remove('logged-in');
+
+  const clave=$('cedulaUsuario');
+  if(clave) clave.value='';
+
+  qsa('.role-card').forEach(btn=>btn.classList.toggle('active', btn.dataset.role===nuevoRol));
+  applyRole();
+
+  setFeedback('feedbackLogin','blue', nuevoRol==='docente'
+    ? 'Rol docente seleccionado. Ingresa la clave docente para continuar.'
+    : 'Rol estudiante seleccionado. Ingresa tu documento para continuar.');
+
+  showPage('home');
+  saveState(false);
+}
+
+function renderIntegrantes(){const box=$('listaIntegrantes');if(!box)return;box.innerHTML='';(state.integrantes||[]).forEach((item,index)=>{const row=document.createElement('div');row.className='student-row';row.innerHTML='<input placeholder="Nombre completo" value="'+escapeHTML(item.nombre)+'" data-integrante-nombre="'+index+'"><input placeholder="Cédula" value="'+escapeHTML(item.cedula)+'" data-integrante-cedula="'+index+'"><button type="button" class="light" data-eliminar-integrante="'+index+'">Eliminar</button>';box.appendChild(row);});}
+function addIntegrante(){state.integrantes=state.integrantes||[];state.integrantes.push({nombre:'',cedula:''});renderIntegrantes();autoSave();}
+function removeIntegrante(index){state.integrantes.splice(index,1);if(state.integrantes.length===0)state.integrantes.push({nombre:'',cedula:''});renderIntegrantes();autoSave();}
+function updateProgress(){const required=['nombreAgencia','cursoGrupo','periodoGrupo'];let completed=required.filter(id=>$(id)?.value).length;if((state.integrantes||[]).some(i=>i.nombre&&i.cedula))completed++;const percent=Math.round((completed/4)*100);state.progreso=percent;if($('progressBar'))$('progressBar').style.width=percent+'%';if($('progressText'))$('progressText').textContent=percent+'%';}
+function handleLogin(){
+  const cedula=($('cedulaUsuario')?.value||'').trim();
+  const nombre=($('nombreAgencia')?.value||'').trim();
+
+  if(!cedula){
+    setFeedback('feedbackLogin','orange','Ingresa documento o clave.');
+    return;
+  }
+
+  if(state.role==='docente'){
+    if(cedula!==DOCENTE_KEY){
+      state.loggedIn=false;
+      state.sessionRole='';
+      document.body.classList.remove('logged-in');
+      applyRole();
+      setFeedback('feedbackLogin','orange','Clave docente incorrecta.');
+      return;
+    }
+    state.loggedIn=true;
+    state.sessionRole='docente';
+  }else{
+    const docEstudiante=cedula.replace(/\D/g,'');
+    if(docEstudiante.length<5){
+      setFeedback('feedbackLogin','orange','Ingresa un documento válido de mínimo 5 números.');
+      return;
+    }
+    if(!nombre){
+      setFeedback('feedbackLogin','orange','Registra el nombre del proyecto.');
+      return;
+    }
+    state.loggedIn=true;
+    state.sessionRole='estudiante';
+  }
+
+  document.body.classList.add('logged-in');
+  window.__inicioSesion=Date.now();
+
+  const clave=$('cedulaUsuario');
+  if(clave) clave.value='';
+
+  applyRole();
+
+  setFeedback('feedbackLogin','green',state.sessionRole==='docente'?'Ingreso docente activado.':'Ingreso estudiante activado.');
+  guardarMaestroSheets('login');
+  guardarTrazabilidadSheets('login','ingreso','rol','',state.sessionRole,'Inicio de sesión');
+
+  if(valorCampo('appsScriptUrl','')) enviarGoogleSheets('login');
+
+  showPage(state.sessionRole==='docente'?'docente':'costos');
+}
+
+function renderCostos(){const tabla=$('tablaCostos');if(!tabla)return;tabla.innerHTML='';let f=0,v=0,u=0;costos.forEach((item,index)=>{const valor=Number(item.valor||0);const imp=Number(item.imprevisto||0);const total=valor+(valor*imp/100);if(item.tipo==='fijo')f+=total;if(item.tipo==='variable')v+=total;if(item.tipo==='unico')u+=total;tabla.innerHTML+='<tr><td>'+item.tipo+'</td><td>'+escapeHTML(item.categoria)+'</td><td>'+escapeHTML(item.nombre)+'</td><td>'+formatoCOP(valor)+'</td><td>'+imp+'%</td><td>'+formatoCOP(total)+'</td><td><button type="button" class="danger" data-borrar-costo="'+index+'">Borrar</button></td></tr>';});$('totalCostosFijos').textContent=formatoCOP(f);$('totalCostosVariables').textContent=formatoCOP(v);$('totalCostosUnicos').textContent=formatoCOP(u);$('operacionAnual').textContent=formatoCOP((f+v)*12);$('capitalMinimoOperacion').textContent=formatoCOP(u+f+v);$('capitalIdealOperacion').textContent=formatoCOP(u+((f+v)*3));state.operacionMensual=f+v;renderOpcionesSoftwareProyecto();if(f||v||u)setFeedback('feedbackCostos','green','Costos calculados correctamente.');else setFeedback('feedbackCostos','blue','Registra todos los costos necesarios para operar tu proyecto creativo.');}
+function costoRealNomina(item){const salario=Number(item.salario||0),cantidad=Number(item.cantidad||1),arl=Number(item.arl||0),salMin=Number(item.salarioMinimo||1300000),sub=Number(item.subsidio||162000);let aux=0;if(item.aplicaSubsidio==='si')aux=sub;if(item.aplicaSubsidio==='auto'&&salario<=salMin*2)aux=sub;let costo=salario;if(item.tipo==='laboral'){costo+=salario*(0.085+0.12+0.09+0.2183+arl);}if(item.tipo==='aprendiz')costo+=salario*arl;return (costo+aux)*cantidad;}
+function renderNomina(){const tabla=$('tablaNomina');if(!tabla)return;tabla.innerHTML='';let total=0;nomina.forEach((item,index)=>{const costo=costoRealNomina(item);const hora=costo/160;total+=costo;tabla.innerHTML+='<tr><td>'+escapeHTML(item.cargo)+'</td><td>'+item.tipo+'</td><td>'+formatoCOP(item.salario)+'</td><td>'+formatoCOP(costo)+'</td><td>'+formatoCOP(hora)+'</td><td><button type="button" class="danger" data-borrar-nomina="'+index+'">Borrar</button></td></tr>';});$('totalNominaMensual').textContent=formatoCOP(total);$('totalNominaAnual').textContent=formatoCOP(total*12);if(total>0)setFeedback('feedbackNomina','green','La nómina se calculó correctamente.');renderOpcionesNominaProyecto();}
+function renderOpcionesNominaProyecto(){const select=$('rolProyecto');if(!select)return;const actual=select.value;select.innerHTML='<option value="manual">Valor manual</option>';nomina.forEach((item,index)=>{const hora=costoRealNomina(item)/160;select.innerHTML+='<option value="'+index+'">'+escapeHTML(item.cargo)+' — '+formatoCOP(hora)+'/hora</option>';});if(Array.from(select.options).some(o=>o.value===actual))select.value=actual;}
+function renderOpcionesSoftwareProyecto(){const select=$('softwareProyecto');if(!select)return;const actual=select.value;select.innerHTML='<option value="todos">Todos los softwares registrados</option>';costos.filter(item=>item.tipo==='fijo'&&/software|adobe|licencia|hosting|dominio|app|ia/i.test((item.nombre||'')+' '+(item.categoria||''))).forEach((item,index)=>{select.innerHTML+='<option value="'+index+'">'+escapeHTML(item.nombre)+' — '+formatoCOP(item.valor)+'/mes</option>';});if(Array.from(select.options).some(o=>o.value===actual))select.value=actual;}
+function valorHoraProyecto(){const rol=$('rolProyecto')?.value||'manual';if(rol==='manual')return limpiarNumero($('valorHoraManual')?.value||0);const item=nomina[Number(rol)];return item?costoRealNomina(item)/160:0;}
+function costoSoftwareMensualProyecto(){const opcion=$('softwareProyecto')?.value||'todos';const softwares=costos.filter(item=>item.tipo==='fijo'&&/software|adobe|licencia|hosting|dominio|app|ia/i.test((item.nombre||'')+' '+(item.categoria||'')));if(opcion==='todos')return softwares.reduce((a,item)=>a+Number(item.valor||0),0);return Number(softwares[Number(opcion)]?.valor||0);}
+function renderProyecto(){const tabla=$('tablaProyecto');if(!tabla)return;tabla.innerHTML='';const horas=Number($('horasProyecto')?.value||0),hora=valorHoraProyecto(),costoNom=horas*hora,horasSoft=Number($('horasSoftware')?.value||0),valorHoraSoft=costoSoftwareMensualProyecto()/160,costoSoft=horasSoft*valorHoraSoft;if(costoNom>0)tabla.innerHTML+='<tr><td>Nómina</td><td>Horas de trabajo</td><td>'+horas+'</td><td>'+formatoCOP(hora)+'</td><td>'+formatoCOP(costoNom)+'</td><td>Automático</td></tr>';if(costoSoft>0)tabla.innerHTML+='<tr><td>Software</td><td>Uso de software</td><td>'+horasSoft+'</td><td>'+formatoCOP(valorHoraSoft)+'</td><td>'+formatoCOP(costoSoft)+'</td><td>Automático</td></tr>';materiales.forEach((item,index)=>{const total=Number(item.cantidad||0)*Number(item.valor||0);tabla.innerHTML+='<tr><td>Material</td><td>'+escapeHTML(item.concepto)+'</td><td>'+item.cantidad+'</td><td>'+formatoCOP(item.valor)+'</td><td>'+formatoCOP(total)+'</td><td><button type="button" class="danger" data-borrar-material="'+index+'">Borrar</button></td></tr>';});}
+function calcularProyecto(){const horas=Number($('horasProyecto')?.value||0),hora=valorHoraProyecto(),costoNom=horas*hora,horasSoft=Number($('horasSoftware')?.value||0),costoSoft=horasSoft*(costoSoftwareMensualProyecto()/160),costoMat=materiales.reduce((a,i)=>a+(Number(i.cantidad||0)*Number(i.valor||0)),0),subtotal=costoNom+costoSoft+costoMat,util=Number($('utilidadProyecto')?.value||0),precio=subtotal*(1+util/100),ganancia=precio-subtotal;state.precioProyecto=precio;$('costoNominaProyecto').textContent=formatoCOP(costoNom);$('costoSoftwareProyecto').textContent=formatoCOP(costoSoft);$('costoMaterialesProyecto').textContent=formatoCOP(costoMat);$('subtotalProyecto').textContent=formatoCOP(subtotal);$('precioSugeridoProyecto').textContent=formatoCOP(precio);$('gananciaProyecto').textContent=formatoCOP(ganancia);if(precio<=0)setFeedback('feedbackProyecto','orange','Completa horas, valor hora o materiales para calcular el proyecto.');else if(util<20)setFeedback('feedbackProyecto','orange','La utilidad parece baja.');else setFeedback('feedbackProyecto','green','Precio sugerido calculado correctamente.');renderProyecto();calcularBalanza();autoSave();}
+function aplicarEstadoBalanza(estado){const op=$('platoOperacion'),tarifa=$('platoTarifa'),barra=$('barraBalanza');if(!op||!tarifa||!barra)return;op.style.boxShadow=tarifa.style.boxShadow='none';if(estado==='verde'){tarifa.style.background='#dcfce7';tarifa.style.color='#166534';tarifa.style.boxShadow='0 0 18px rgba(34,197,94,.35)';op.style.background='#eaf1fb';barra.style.background='linear-gradient(90deg,#22c55e,#16a34a)';}else if(estado==='naranja'){tarifa.style.background=op.style.background='#fff4db';tarifa.style.color=op.style.color='#92400e';tarifa.style.boxShadow='0 0 18px rgba(245,158,11,.28)';barra.style.background='linear-gradient(90deg,#f59e0b,#f97316)';}else if(estado==='rojo'){op.style.background=tarifa.style.background='#fee2e2';op.style.color=tarifa.style.color='#991b1b';op.style.boxShadow='0 0 18px rgba(239,68,68,.35)';barra.style.background='linear-gradient(90deg,#ef4444,#dc2626)';}else{op.style.background=tarifa.style.background='#eaf1fb';op.style.color=tarifa.style.color='#0b2540';barra.style.background='var(--teal)';}}
+function calcularBalanza(){const operacion=Number(state.operacionMensual||0),precio=Number(state.precioProyecto||0),inv=costos.filter(c=>c.tipo==='unico').reduce((a,c)=>a+(Number(c.valor||0)*(1+(Number(c.imprevisto||0)/100))),0);let proyectos=0;if(operacion>0&&precio>0)proyectos=Math.ceil(operacion/precio);$('balanzaOperacion').textContent=formatoCOP(operacion);$('balanzaPrecio').textContent=formatoCOP(precio);$('balanzaProyectosMinimos').textContent=proyectos?proyectos+' proyecto(s) al mes':'Pendiente';let meses='Pendiente';if(precio>0){const utilidadProyecto=Math.max(precio-operacion,precio*0.18),proyectosMes=Math.max(1,Math.floor(precio/Math.max(operacion,1))),utilidadMensual=utilidadProyecto*proyectosMes;if(utilidadMensual>0){const m=Math.ceil(inv/utilidadMensual);meses=m<=1?'Menos de 1 mes':m+' meses aprox.';}}$('puntoEquilibrioTiempo').textContent=meses;$('pesoOperacionVisual').textContent=formatoCOP(operacion);$('pesoTarifaVisual').textContent=formatoCOP(precio);const barra=$('barraBalanza');if(barra){const giro=!operacion||!precio?-25:Math.max(-30,Math.min(20,((precio-operacion)/Math.max(operacion,1))*25));barra.style.transform='rotate('+giro+'deg)';}state.balanceScore=!proyectos?2:proyectos<=2?5:proyectos<=4?4:2.5;if(!operacion||!precio){aplicarEstadoBalanza('azul');setFeedback('feedbackBalanza','orange','Calcula primero costos de operación y precio del proyecto.');}else if(proyectos<=2){aplicarEstadoBalanza('verde');setFeedback('feedbackBalanza','green','Proyecto sostenible.');}else if(proyectos<=4){aplicarEstadoBalanza('naranja');setFeedback('feedbackBalanza','orange','La balanza está ajustada.');}else{aplicarEstadoBalanza('rojo');setFeedback('feedbackBalanza','red','Riesgo financiero alto.');}dibujarGraficoEquilibrio(operacion,precio);}
+function dibujarGraficoEquilibrio(operacion,precio){const canvas=$('graficoEquilibrio');if(!canvas||!canvas.getContext)return;const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height,max=Math.max(operacion*1.3,precio*6,1000000);ctx.clearRect(0,0,w,h);ctx.strokeStyle='#dbe4ee';ctx.lineWidth=1;for(let i=0;i<5;i++){const y=40+i*45;ctx.beginPath();ctx.moveTo(60,y);ctx.lineTo(w-30,y);ctx.stroke();}const yOp=h-50-((operacion/max)*170);ctx.strokeStyle='#e76f51';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(60,yOp);ctx.lineTo(w-30,yOp);ctx.stroke();ctx.fillStyle='#e76f51';ctx.fillText('Operación mensual',65,yOp-8);ctx.strokeStyle='#2563eb';ctx.lineWidth=4;ctx.beginPath();for(let i=0;i<=5;i++){const x=80+i*135,y=h-50-(((precio*i)/max)*170);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);ctx.fillStyle='#0b2540';ctx.fillText(i+' proj.',x-10,h-18);}ctx.stroke();}
+function renderLogoAgencia(){['membreteLogoPreview','membreteCampanaPreview','membreteCotizacionPreview','logoChequePreview'].forEach(id=>{const box=$(id);if(!box)return;if(state.logoAgencia)box.innerHTML='<img src="'+state.logoAgencia+'" alt="Logo agencia" style="max-height:100px;max-width:100%;object-fit:contain;">';else box.textContent='ESPACIO PARA LOGO / MEMBRETE DE LA AGENCIA';});}
+function renderAccionesCampana(){const tabla=$('tablaGanttCampana');if(!tabla)return;tabla.innerHTML='';accionesCampana.forEach((a,index)=>{const fin=Number(a.inicio||1)+Number(a.duracion||1)-1;tabla.innerHTML+='<tr><td>'+escapeHTML(a.nombre)+'</td><td>'+escapeHTML(a.canal)+'</td><td>Semana '+a.inicio+'</td><td>Semana '+fin+'</td><td>'+formatoCOP(a.costo)+'</td><td>'+(a.estado||'Programada')+'</td><td><button type="button" class="danger" data-borrar-accion-campana="'+index+'">Borrar</button></td></tr>';});}
+function dibujarGanttCampana(acciones,modo){const canvas=$('graficoGanttCampana');if(!canvas||!canvas.getContext)return;const ctx=canvas.getContext('2d'),w=canvas.width;ctx.clearRect(0,0,w,canvas.height);ctx.fillStyle='#0b2540';ctx.font='bold 18px Arial';ctx.fillText('Cronograma de implementación de campaña',30,30);if(!acciones.length){ctx.font='14px Arial';ctx.fillStyle='#617184';ctx.fillText('Agrega acciones para visualizar el Gantt.',30,80);return;}const maxSemana=Math.max(8,...acciones.map(a=>Number(a.inicio||1)+Number(a.duracion||1)-1)),startX=230,topY=70,rowH=42,colW=Math.max(48,Math.floor((w-startX-40)/maxSemana));ctx.font='12px Arial';for(let s=1;s<=maxSemana;s++){const x=startX+((s-1)*colW);ctx.strokeStyle='#d9e2ec';ctx.strokeRect(x,topY,colW,rowH*acciones.length);ctx.fillStyle='#52606d';ctx.fillText('S'+s,x+10,58);}acciones.forEach((a,index)=>{const y=topY+(index*rowH),x=startX+((Number(a.inicio||1)-1)*colW),width=Math.max(colW,Number(a.duracion||1)*colW);ctx.fillStyle='#0b2540';ctx.fillText(String(a.nombre||'Acción').slice(0,26),20,y+25);ctx.fillStyle=modo==='etapas'?'#f4a261':'#005b96';ctx.fillRect(x,y+8,width,rowH-14);ctx.fillStyle='#fff';ctx.fillText(String(a.canal||'Canal').slice(0,16),x+8,y+25);});}
+function calcularCampana(){const horas=Number($('horasEstrategiaCampana')?.value||0)+Number($('horasDisenoCampana')?.value||0)+Number($('horasAjustesCampana')?.value||0),valorHora=limpiarNumero($('valorHoraCampana')?.value||0),utilidad=Number($('utilidadDisenoCampana')?.value||0),totalDiseno=horas*valorHora*(1+utilidad/100),prodBase=limpiarNumero($('produccionGraficaCampana')?.value||0)+limpiarNumero($('pautaDigitalCampana')?.value||0)+limpiarNumero($('audiovisualCampana')?.value||0)+limpiarNumero($('tecnologiaCampana')?.value||0)+limpiarNumero($('logisticaCampana')?.value||0)+limpiarNumero($('otrosProveedoresCampana')?.value||0)+accionesCampana.reduce((a,x)=>a+Number(x.costo||0),0),imp=Number($('imprevistosProduccionCampana')?.value||0),totalProduccion=prodBase*(1+imp/100),totalGeneral=totalDiseno+totalProduccion,semanas=Number($('duracionProyecto')?.value||0),presupuesto=limpiarNumero($('presupuestoClienteCampana')?.value||0),modoManual=$('modoImplementacionCampana')?.value||'auto',complejidad=$('complejidadCampana')?.value||'Media';let modo=modoManual==='auto'?(presupuesto>0&&presupuesto<totalGeneral?'etapas':'completa'):modoManual;let riesgo='Medio';if(complejidad==='Alta'&&semanas<6)riesgo='Alto';else if(complejidad==='Baja'&&semanas>=3)riesgo='Bajo';$('totalDisenoCampana').textContent=formatoCOP(totalDiseno);$('totalProduccionCampana').textContent=formatoCOP(totalProduccion);$('totalGeneralCampana').textContent=formatoCOP(totalGeneral);$('estadoTiempo').textContent=semanas+' semana(s)';$('riesgoCampanaResultado').textContent=riesgo;$('estadoPresupuesto').textContent=totalGeneral>0?'Calculado':'Pendiente';const acciones=accionesCampana.length?accionesCampana:[{nombre:'Acción de redes sociales',canal:'Redes sociales',inicio:1,duracion:4,costo:0,estado:'Sugerida'},{nombre:'Pauta digital',canal:'Pauta digital',inicio:2,duracion:3,costo:0,estado:'Sugerida'},{nombre:'Activación BTL',canal:'BTL',inicio:6,duracion:1,costo:0,estado:'Sugerida'}];renderAccionesCampana();dibujarGanttCampana(acciones,modo);if(modo==='etapas')setFeedback('feedbackImplementacionCampana','orange','El presupuesto no cubre toda la campaña. Se recomienda implementación por etapas.');else setFeedback('feedbackImplementacionCampana','green','El presupuesto permite implementar la campaña completa.');if(totalGeneral<=0)setFeedback('feedbackCampana','orange','Completa costos para calcular la campaña.');else setFeedback('feedbackCampana','green','Campaña calculada correctamente.');state.campanaTotal=totalGeneral;state.modoImplementacionCampana=modo;autoSave();return{totalDiseno,totalProduccion,totalGeneral,riesgo,semanas};}
+function generarCotizacionCampana(){const d=calcularCampana(),agencia=$('agenciaCampana')?.value||$('nombreAgencia')?.value||'________________',cliente=$('clienteCampana')?.value||'________________',producto=$('productoCampana')?.value||'________________',tipo=$('tipoCampana')?.value||'________________';$('cotizacionCampanaGenerada').value=['COTIZACIÓN DE CAMPAÑA CREATIVA','','[ESPACIO PARA LOGO / MEMBRETE DE LA AGENCIA]','',`Agencia / estudio: ${agencia}`,`Cliente: ${cliente}`,`Producto o campaña: ${producto}`,`Tipo de campaña: ${tipo}`,'','1. ALCANCE GENERAL','La cotización contempla diseño, planeación e implementación de la campaña según los datos suministrados.','','2. PRESUPUESTO DE DISEÑO',`Valor presupuesto de diseño: ${formatoCOP(d.totalDiseno)}`,'','3. PRODUCCIÓN / IMPLEMENTACIÓN',`Valor producción / implementación: ${formatoCOP(d.totalProduccion)}`,'','4. VALOR TOTAL',`Valor total estimado: ${formatoCOP(d.totalGeneral)}`,'','5. CRONOGRAMA PROPUESTO',`Duración estimada: ${d.semanas} semana(s).`,'','6. CONDICIONES','Cambios de alcance, piezas adicionales o urgencias podrán modificar valor y cronograma.','','© Typometiz · Denize Asceneth Torres Ruiz'].join('\n');setFeedback('feedbackCampana','green','Cotización para cliente generada.');autoSave();}
+function calcularEco(){
+  const checks=document.querySelectorAll('.eco-check:checked').length;
+  const score=checks===4?5:checks===3?4.5:checks===2?3.8:checks===1?3:2;
+  const bono=checks===4?0.5:checks===3?0.3:checks===2?0.1:0;
+  state.ecoScore=score;
+  state.bonoEco=bono;
+  $('puntajeEco').textContent=score.toFixed(1)+' / 5';
+  $('bonoEco').textContent='+'+bono.toFixed(1);
+  $('insigniaEco').textContent=checks===4?'EcoMaster':checks===3?'EcoThinker':checks>=1?'EcoStarter':'—';
+  setFeedback('feedbackEco',checks>=3?'green':checks>=1?'orange':'blue',checks>=3?'Muy bien: integra ecodiseño. Bono pedagógico: +'+bono.toFixed(1):checks>=1?'Buen inicio. Bono pedagógico: +'+bono.toFixed(1):'Selecciona criterios sostenibles.');
+  autoSave();
+}
+function analizarLegal(){const empresa=$('tipoEmpresa').value,protecciones=document.querySelectorAll('.pi-check:checked').length;let sugerencia='Formalización básica',nivel='Inicial';if(['sas','ltda','sa','empresa-ti','startup','empresa-ia','plataforma-digital','empresa-bic'].includes(empresa)){sugerencia='Empresa formal recomendada';nivel='Alto';}else if(['cooperativa','fundacion','corporacion','asociacion','spin-off'].includes(empresa)){sugerencia='Entidad colectiva / institucional';nivel='Medio-Alto';}$('empresaSugerida').textContent=sugerencia;$('formalizacionLegal').textContent=nivel;$('proteccionPI').textContent=protecciones>=3?'Protección sólida':protecciones>=1?'Protección parcial':'Protección mínima';setFeedback('feedbackLegal','green','Análisis legal generado automáticamente.');}
+function textoBaseContrato(tipo){const extras=[];if(/software|SaaS|plataforma|tecnológica|tecnologico|implementación|prototipado/i.test(tipo)){extras.push('CLÁUSULA ESPECIAL. SOPORTE, MANTENIMIENTO Y DATOS. Las partes deberán definir soporte, actualizaciones, alojamiento, corrección de errores, licencias, integraciones, servidores, tratamiento de datos y servicios de terceros.');}if(/cesión/i.test(tipo)){extras.push('CLÁUSULA ESPECIAL. CESIÓN DE DERECHOS. La cesión deberá indicar obras, usos, territorio, duración, medios y alcance económico. Los derechos morales permanecen en cabeza del autor.');}if(/licencia/i.test(tipo)){extras.push('CLÁUSULA ESPECIAL. LICENCIA DE USO. La licencia se concede solo para usos, medios, territorio, duración y piezas pactadas.');}if(/confidencialidad|NDA/i.test(tipo)){extras.push('CLÁUSULA ESPECIAL. CONFIDENCIALIDAD. Las partes no divulgarán información técnica, comercial, estratégica, creativa o financiera.');}return extras.join('\n\n');}
+function generarContratoCompleto(){
+  const tipo=$('tipoContratoLegal').value;
+  const actividad=$('actividadEmpresa').value;
+  const empresa=$('tipoEmpresa').value;
+
+  const contratante=$('contratanteLegal').value||'________________';
+  const idContratante=$('idContratanteLegal').value||'________________';
+  const dirContratante=$('direccionContratanteLegal').value||'________________';
+  const telContratante=$('telefonoContratanteLegal').value||'________________';
+
+  const contratista=$('contratistaLegal').value||$('nombreAgencia')?.value||'________________';
+  const idContratista=$('idContratistaLegal').value||'________________';
+  const dirContratista=$('direccionContratistaLegal').value||'________________';
+  const telContratista=$('telefonoContratistaLegal').value||'________________';
+
+  const objeto=$('objetoContratoLegal').value||'________________';
+  const valor=formatoCOP(limpiarNumero($('valorContratoLegal').value||0));
+  const plazo=$('plazoContratoLegal').value||'________________';
+  const ciudad=$('ciudadContratoLegal').value||'Bogotá D.C.';
+
+  const contrato=[
+`${tipo.toUpperCase()}
+
+CONTRATO DE SERVICIOS CREATIVOS, DISEÑO, PRODUCCIÓN O DESARROLLO
+
+Entre los suscritos a saber:
+
+EL CONTRATANTE: ${contratante}, identificado(a) con C.C./NIT ${idContratante}, con domicilio o dirección en ${dirContratante}, teléfono ${telContratante}, quien para efectos del presente documento se denominará EL CONTRATANTE.
+
+EL CONTRATISTA: ${contratista}, identificado(a) con C.C./NIT ${idContratista}, con domicilio o dirección en ${dirContratista}, teléfono ${telContratista}, quien para efectos del presente documento se denominará EL CONTRATISTA.
+
+Las partes acuerdan celebrar el presente contrato, regido por las siguientes cláusulas:
+
+PRIMERA. OBJETO DEL CONTRATO
+
+EL CONTRATISTA se obliga a desarrollar para EL CONTRATANTE el siguiente objeto:
+
+${objeto}
+
+Actividad principal asociada: ${actividad}.
+Tipo de figura empresarial o modalidad declarada: ${empresa}.
+
+SEGUNDA. ALCANCE DEL SERVICIO
+
+El alcance del presente contrato comprende únicamente los productos, entregables, actividades, piezas, archivos, servicios, reuniones, revisiones y acompañamientos expresamente pactados por escrito entre las partes.
+
+Cualquier actividad no incluida expresamente en este documento, propuesta, cotización, anexo técnico o acta de inicio se entenderá como un servicio adicional y podrá generar ajuste de valor, plazo o condiciones.
+
+TERCERA. ENTREGABLES
+
+Los entregables podrán incluir, según corresponda:
+
+a. Diagnóstico, investigación, brief o levantamiento de información.
+b. Conceptualización creativa.
+c. Desarrollo gráfico, visual, digital, audiovisual, editorial, publicitario o tecnológico.
+d. Archivos finales para uso, impresión, publicación o implementación.
+e. Presentación de avances.
+f. Ajustes dentro del número acordado.
+g. Informe, memoria, manual, prototipo, pieza, campaña o producto final.
+
+Los archivos editables, matrices, fuentes, bocetos, descartes, pruebas internas, prompts, metodologías, plantillas o procesos de trabajo no se entenderán incluidos salvo pacto expreso.
+
+CUARTA. VALOR DEL CONTRATO
+
+El valor total del contrato será de ${valor}.
+
+Este valor corresponde al alcance inicialmente pactado. Cualquier cambio de alcance, aumento de piezas, formatos adicionales, urgencias, nuevas versiones, cambios de concepto, nuevas reuniones, rediseños o modificaciones sustanciales podrá ser cotizado de manera independiente.
+
+QUINTA. FORMA DE PAGO
+
+Salvo pacto distinto, se recomienda la siguiente forma de pago:
+
+a. 50% como anticipo para iniciar actividades.
+b. 30% contra entrega de avance o validación intermedia.
+c. 20% contra entrega final.
+
+La entrega final de archivos, publicación, cesión de derechos, licencia de uso o liberación de piezas podrá condicionarse al pago total del contrato.
+
+SEXTA. PLAZO DE EJECUCIÓN
+
+El plazo estimado de ejecución será de ${plazo}.
+
+El plazo podrá modificarse cuando existan demoras en entrega de información, aprobaciones, insumos, pagos, contenidos, imágenes, accesos, reuniones o decisiones imputables a EL CONTRATANTE.
+
+SÉPTIMA. OBLIGACIONES DEL CONTRATISTA
+
+EL CONTRATISTA se obliga a:
+
+a. Ejecutar el servicio con criterios técnicos, creativos y profesionales.
+b. Cumplir el alcance pactado.
+c. Presentar avances según el cronograma definido.
+d. Informar oportunamente situaciones que afecten tiempo, costo o alcance.
+e. Mantener reserva sobre información confidencial.
+f. Entregar los productos finales acordados.
+g. Corregir ajustes razonables incluidos dentro del alcance.
+
+OCTAVA. OBLIGACIONES DEL CONTRATANTE
+
+EL CONTRATANTE se obliga a:
+
+a. Entregar información completa, clara y oportuna.
+b. Revisar y aprobar avances dentro de tiempos razonables.
+c. Realizar los pagos pactados.
+d. Suministrar textos, imágenes, logos, permisos, accesos o insumos necesarios.
+e. Garantizar que los materiales entregados no vulneran derechos de terceros.
+f. No solicitar usos, piezas o alcances no contratados sin cotización adicional.
+g. Respetar la autoría y condiciones de uso del trabajo creativo.
+
+NOVENA. AJUSTES, CAMBIOS Y REVERSIONES
+
+El contrato incluye únicamente los ajustes razonables pactados entre las partes.
+
+No se consideran ajustes menores:
+
+a. Cambiar completamente el concepto aprobado.
+b. Solicitar una nueva línea gráfica.
+c. Rehacer piezas previamente aprobadas.
+d. Agregar nuevos formatos, canales o idiomas.
+e. Cambiar textos, fotografías, productos o información base después de aprobación.
+f. Solicitar entregas urgentes no pactadas.
+
+Estos casos podrán generar costos adicionales.
+
+DÉCIMA. PROPIEDAD INTELECTUAL
+
+Los derechos morales sobre las obras, diseños, textos, conceptos, ilustraciones, piezas, prototipos, campañas, desarrollos o contenidos pertenecen a sus autores y son irrenunciables.
+
+Los derechos patrimoniales, licencias de uso o cesiones solo se entenderán otorgados cuando:
+
+a. Exista autorización expresa por escrito.
+b. Se haya definido el alcance de uso.
+c. Se haya pagado el valor correspondiente.
+d. Se indique territorio, tiempo, medios, canales y finalidad.
+
+La entrega de archivos finales no implica cesión automática de derechos patrimoniales ni entrega de archivos editables, salvo pacto expreso.
+
+DÉCIMA PRIMERA. USO DE PORTAFOLIO
+
+Salvo solicitud escrita de confidencialidad, EL CONTRATISTA podrá incluir el proyecto en portafolio académico, profesional, investigativo o promocional, respetando información sensible o reservada.
+
+DÉCIMA SEGUNDA. CONFIDENCIALIDAD
+
+Las partes se obligan a mantener reserva sobre información estratégica, técnica, comercial, financiera, creativa, académica, metodológica o de negocio conocida durante la ejecución del contrato.
+
+Esta obligación permanecerá vigente incluso después de terminado el contrato.
+
+DÉCIMA TERCERA. TRATAMIENTO DE DATOS PERSONALES
+
+Cuando el proyecto implique manejo de datos personales, imágenes, testimonios, bases de datos, registros de usuarios, estudiantes, clientes o terceros, las partes deberán cumplir la normativa aplicable sobre protección de datos personales.
+
+EL CONTRATANTE declara contar con autorizaciones necesarias para el uso de imágenes, logos, marcas, textos, música, fotografías, voces, datos o contenidos suministrados.
+
+DÉCIMA CUARTA. USO DE HERRAMIENTAS DIGITALES E INTELIGENCIA ARTIFICIAL
+
+Cuando el proyecto incorpore herramientas digitales, automatización, inteligencia artificial, bancos de imágenes, software, plantillas, plugins, tipografías, APIs o servicios de terceros, su uso estará sujeto a las licencias y condiciones de dichas plataformas.
+
+EL CONTRATISTA deberá informar cuando estas herramientas incidan de manera relevante en entregables, derechos de uso, costos o restricciones.
+
+DÉCIMA QUINTA. LICENCIAS DE TERCEROS
+
+No se entienden incluidos en el valor del contrato costos de licencias, dominios, hosting, pauta, impresión, producción, fotografías, bancos de imágenes, música, tipografías, software, servidores, plugins, APIs o servicios externos, salvo que se pacte expresamente.
+
+DÉCIMA SEXTA. APROBACIONES
+
+La aprobación escrita, verbal, por correo, mensaje, formulario, acta o medio digital de una etapa autoriza avanzar a la siguiente.
+
+Cambios solicitados después de una aprobación podrán considerarse reprocesos y generar costos adicionales.
+
+DÉCIMA SÉPTIMA. SUSPENSIÓN O TERMINACIÓN
+
+El contrato podrá suspenderse o terminarse por:
+
+a. Incumplimiento de pagos.
+b. Falta de entrega de información necesaria.
+c. Cambios sustanciales no acordados.
+d. Fuerza mayor o caso fortuito.
+e. Mutuo acuerdo.
+f. Incumplimiento grave de alguna de las partes.
+
+En caso de terminación anticipada, deberán reconocerse los avances efectivamente realizados.
+
+DÉCIMA OCTAVA. RESPONSABILIDAD
+
+EL CONTRATISTA responderá por el cumplimiento del alcance contratado, pero no será responsable por decisiones comerciales, legales, financieras, técnicas, publicitarias o de implementación tomadas directamente por EL CONTRATANTE sin validación profesional correspondiente.
+
+DÉCIMA NOVENA. MODIFICACIONES
+
+Cualquier modificación de alcance, valor, plazo, entregables o condiciones deberá realizarse por escrito mediante correo, acta, otrosí o documento equivalente.
+
+VIGÉSIMA. SOLUCIÓN DE CONTROVERSIAS
+
+Las partes procurarán resolver cualquier diferencia mediante diálogo directo, conciliación o mecanismos alternativos de solución de conflictos antes de acudir a instancias judiciales.
+
+VIGÉSIMA PRIMERA. LEY APLICABLE
+
+El presente contrato se interpreta conforme a la legislación colombiana aplicable, incluyendo Código Civil, Código de Comercio, Ley 23 de 1982, Decisión Andina 351 de 1993, Ley 1915 de 2018, Ley 1581 de 2012 y demás normas relacionadas, según corresponda.
+
+${textoBaseContrato(tipo)}
+
+En constancia se firma en ${ciudad}.
+
+EL CONTRATANTE
+
+Firma: ________________________________
+Nombre: ${contratante}
+C.C./NIT: ${idContratante}
+
+
+EL CONTRATISTA
+
+Firma: ________________________________
+Nombre: ${contratista}
+C.C./NIT: ${idContratista}
+
+
+Nota pedagógica: Este contrato es un modelo académico orientativo. Para uso real debe ser revisado por un profesional jurídico.
+`
+  ].join('\n');
+
+  $('contratoGeneradoLegal').value=contrato;
+
+  const resumen=$('resumenContratoLegal');
+  resumen.style.display='block';
+  resumen.innerHTML='<strong>Contrato robusto generado.</strong><br>Incluye alcance, entregables, PI, cambios, IA, datos, terceros, pagos y terminación.';
+
+  analizarLegal();
+  guardarSnapshotSheets('contrato_generado');
+  autoSave();
+}
+function notaValida(id){
+  const el=$(id);
+  if(!el) return null;
+  const raw=String(el.value||'').trim();
+  if(raw==='') return null;
+  const n=Number(raw.replace(',','.'));
+  if(Number.isNaN(n) || n<1 || n>5) return null;
+  return n;
+}
+function resetResultadoEvaluacion(mensaje){
+  $('resultadoProceso').textContent='—';
+  $('resultadoFinalProyecto').textContent='—';
+  $('resultadoDefinitivo').textContent='—';
+  $('comentarioAutomaticoResultado').textContent=mensaje||'Aún no hay calificación válida.';
+  $('insigniaViabilidad').textContent='—';
+  $('insigniaEstrategia').textContent='—';
+  $('insigniaImplementacion').textContent='—';
+  state.notaBase=null;
+  state.notaFinal=null;
+  saveState(false);
+}
+function calcularRubricaFinal(){
+  const idsProceso=['notaProcesoInvestigacion','notaProcesoSeguimiento','notaProcesoAvances'];
+  const idsResultado=['notaResultadoViabilidad','notaResultadoEstrategia','notaResultadoPresentacion','notaResultadoImplementacion'];
+  const valsProceso=idsProceso.map(notaValida);
+  const valsResultado=idsResultado.map(notaValida);
+  if(valsProceso.some(v=>v===null) || valsResultado.some(v=>v===null)){
+    resetResultadoEvaluacion('Completa todas las calificaciones con valores entre 1.0 y 5.0. Los campos vacíos no se calculan ni reciben nota automática.');
+    setFeedback('feedbackResultado','orange','Faltan calificaciones. No se asignó 4.0 ni ninguna nota automática.');
+    return false;
+  }
+  const proceso=valsProceso.reduce((a,b)=>a+b,0)/valsProceso.length;
+  const resultado=valsResultado.reduce((a,b)=>a+b,0)/valsResultado.length;
+  const base=(proceso*0.3)+(resultado*0.7);
+  const bono=Math.min(0.5, Math.max(0, Number(state.bonoEco||0)));
+  const def=Math.min(5, base+bono);
+  $('resultadoProceso').textContent=proceso.toFixed(1);
+  $('resultadoFinalProyecto').textContent=resultado.toFixed(1);
+  $('resultadoDefinitivo').textContent=def.toFixed(1);
+  let comentario='';
+  if(def>=4.6){comentario='Proyecto sobresaliente. Alta coherencia estratégica, viabilidad y estructura financiera.';setFeedback('feedbackResultado','green','Resultado excelente. Nota base '+base.toFixed(1)+' + bono ecológico '+bono.toFixed(1)+'.');}
+  else if(def>=4){comentario='Proyecto sólido con oportunidades de mejora específicas.';setFeedback('feedbackResultado','blue','Buen resultado general. Nota base '+base.toFixed(1)+' + bono ecológico '+bono.toFixed(1)+'.');}
+  else if(def>=3){comentario='Cumple parcialmente. Requiere fortalecer viabilidad, organización o implementación.';setFeedback('feedbackResultado','orange','Resultado medio. Nota base '+base.toFixed(1)+' + bono ecológico '+bono.toFixed(1)+'.');}
+  else{comentario='Presenta debilidades importantes en viabilidad, planificación o coherencia.';setFeedback('feedbackResultado','red','Resultado insuficiente. Nota base '+base.toFixed(1)+' + bono ecológico '+bono.toFixed(1)+'.');}
+  $('comentarioAutomaticoResultado').textContent=comentario;
+  const viab=notaValida('notaResultadoViabilidad')||0;
+  const estr=notaValida('notaResultadoEstrategia')||0;
+  const impl=notaValida('notaResultadoImplementacion')||0;
+  $('insigniaViabilidad').textContent=viab>=4.5?'Proyecto sostenible':viab>=3.5?'Viabilidad en desarrollo':'Viabilidad crítica';
+  $('insigniaEstrategia').textContent=estr>=4.5?'Pensamiento estratégico':estr>=3.5?'Estrategia funcional':'Estrategia débil';
+  $('insigniaImplementacion').textContent=impl>=4.5?'Implementación destacada':impl>=3.5?'Implementación viable':'Implementación riesgosa';
+  state.notaBase=base;
+  state.notaFinal=def;
+  autoSave();
+  return true;
+}
+function lecturaNota(n){n=Number(n||0);if(n>=4.6)return 'Sobresaliente';if(n>=4)return 'Alto';if(n>=3.5)return 'Aceptable con ajustes';if(n>=3)return 'Básico';return 'Crítico';}
+function valorCampo(id, defecto='—'){
+  const el = $(id);
+  const valor = el ? String(el.value || '').trim() : '';
+  return valor || defecto;
+}
+function documentoSesionSeguro(){
+  if(state.role==='docente') return 'DOCENTE';
+  return sessionDocumento || '';
+}
+function limpiarClaveLogin(){
+  const input=$('cedulaUsuario');
+  if(input) input.value='';
+  if(state.fields&&Object.prototype.hasOwnProperty.call(state.fields,'cedulaUsuario')) delete state.fields.cedulaUsuario;
+}
+function actualizarTrazabilidad(){const tieneNota=state.notaFinal!==null&&state.notaFinal!==undefined&&!Number.isNaN(Number(state.notaFinal));const filas=[['Costos',costos.length?'Completado':'Pendiente',costos.length?formatoCOP(state.operacionMensual||0):'—'],['Nómina',nomina.length?'Completado':'Pendiente',nomina.length?formatoCOP(nomina.reduce((a,n)=>a+costoRealNomina(n),0)):'—'],['Proyecto',state.precioProyecto?'Completado':'Pendiente',state.precioProyecto?formatoCOP(state.precioProyecto):'—'],['Balanza',state.balanceScore?'Analizado':'Pendiente',state.balanceScore?state.balanceScore.toFixed(1)+'/5':'—'],['Legal',$('contratoGeneradoLegal')?.value?'Generado':'Pendiente',$('tipoContratoLegal')?.value||'—'],['Campaña',accionesCampana.length?'Configurada':'Pendiente',accionesCampana.length+ ' acción(es)'],['Resultado',tieneNota?'Evaluado':'Pendiente',tieneNota?Number(state.notaFinal).toFixed(1):'—']];const tabla=$('tablaTrazabilidadProyecto');if(tabla){tabla.innerHTML='';filas.forEach(f=>{tabla.innerHTML+='<tr><td>'+f[0]+'</td><td>'+f[1]+'</td><td>'+f[2]+'</td></tr>';});}$('estadoProyectoFinal').textContent=tieneNota?(state.notaFinal>=4?'Consolidado':'En desarrollo'):'Pendiente de calificación';$('viabilidadProyectoFinal').textContent=state.balanceScore>=4?'Alta':state.balanceScore>=3?'Media':'Baja';$('implementacionProyectoFinal').textContent=accionesCampana.length>=4?'Completa':accionesCampana.length>=2?'Parcial':'Inicial';setFeedback('feedbackTrazabilidad','green','La trazabilidad fue consolidada.');autoSave();}
+function generarChequeCreativo(){actualizarTrazabilidad();const tieneNota=state.notaFinal!==null&&state.notaFinal!==undefined&&!Number.isNaN(Number(state.notaFinal));const cheque=$('chequeCreativo');cheque.style.display='block';$('nombreChequeProyecto').textContent=$('nombreAgencia')?.value||'Proyecto creativo';const inv=costos.filter(c=>c.tipo==='unico').reduce((a,c)=>a+(Number(c.valor||0)*(1+(Number(c.imprevisto||0)/100))),0);$('valorChequeInversion').textContent=formatoCOP(inv);$('valorChequeProyecto').textContent=formatoCOP(state.precioProyecto||0);$('notaChequeProyecto').textContent=tieneNota?Number(state.notaFinal).toFixed(1):'—';renderLogoAgencia();let mensaje='Aún no hay calificación completa. Completa la rúbrica para emitir concepto final.',estado='Pendiente de calificación',color='#92400e';if(tieneNota&&state.notaFinal>=4.5){mensaje='Alta coherencia estratégica, viabilidad financiera y capacidad de implementación.';estado='Proyecto sobresaliente';color='#166534';}else if(tieneNota&&state.notaFinal>=4){mensaje='Proyecto viable con estructura sólida y oportunidades de crecimiento.';estado='Proyecto viable';color='#166534';}else if(tieneNota&&state.notaFinal>=3){mensaje='Requiere ajustes estratégicos y financieros antes de implementarse completamente.';estado='Proyecto ajustable';color='#92400e';}else if(tieneNota){mensaje='El proyecto necesita replantear costos, implementación y estructura general.';estado='Proyecto crítico';color='#991b1b';}$('mensajeChequeProyecto').textContent=mensaje;$('estadoChequeProyecto').textContent=estado;$('estadoChequeProyecto').style.color=color;setFeedback('feedbackTrazabilidad','green','Cheque creativo generado.');autoSave();}
+function actualizarPanelDocente(){const ok=calcularRubricaFinal();if(!ok){setFeedback('feedbackDocente','orange','No se actualizó el panel: faltan calificaciones válidas.');return;}actualizarTrazabilidad();$('docenteNombreGrupo').textContent=valorCampo('nombreAgencia','Sin nombre');$('docenteNotaFinal').textContent=Number(state.notaFinal||0).toFixed(1);$('docenteEstadoProyecto').textContent=lecturaNota(state.notaFinal);const tablaInt=$('docenteTablaIntegrantes');if(tablaInt){tablaInt.innerHTML='';(state.integrantes||[]).forEach(i=>tablaInt.innerHTML+='<tr><td>'+escapeHTML(i.nombre||'—')+'</td><td>'+escapeHTML(i.cedula||'—')+'</td></tr>');}const proceso=Number($('resultadoProceso')?.textContent||0),resultado=Number($('resultadoFinalProyecto')?.textContent||0),def=Number(state.notaFinal||0),viab=Number($('notaResultadoViabilidad')?.value||0),estr=Number($('notaResultadoEstrategia')?.value||0),impl=Number($('notaResultadoImplementacion')?.value||0),eco=Number(state.ecoScore||0);const filas=[['Proceso','30%','Investigación, participación y avances',proceso],['Resultado','70%','Viabilidad, estrategia, presentación e implementación',resultado],['Viabilidad financiera','Resultado','Costos, precio, balanza y equilibrio',viab],['Estrategia','Resultado','Coherencia conceptual y de mercado',estr],['Implementación','Resultado','Cronograma, campaña y entregables',impl],['Ecodiseño','Bono hasta +0.5','Decisiones sostenibles',eco],['Definitiva','100%','Resultado ponderado final',def]];const tabla=$('docenteTablaRubrica');if(tabla){tabla.innerHTML='';filas.forEach(f=>tabla.innerHTML+='<tr><td>'+f[0]+'</td><td>'+f[1]+'</td><td>'+f[2]+'</td><td>'+Number(f[3]||0).toFixed(1)+'</td><td>'+lecturaNota(f[3])+'</td></tr>');}setFeedback('feedbackDocente','green','Panel docente actualizado.');autoSave();}
+function generarInformeDocente(){actualizarPanelDocente();const integrantes=(state.integrantes||[]).map(i=>'- '+(i.nombre||'Sin nombre')+' · '+(i.cedula||'Sin documento')).join('\n');const informe=['INFORME DE EVALUACIÓN DEL PROYECTO','',`Grupo / agencia: ${valorCampo('nombreAgencia','grupo sin nombre')}`,`Curso: ${valorCampo('cursoGrupo','—')}`,`Periodo: ${valorCampo('periodoGrupo','—')}`,'','Integrantes:',integrantes,'',`Nota proceso: ${$('resultadoProceso')?.textContent||'0.0'} / 5.0`,`Nota resultado final: ${$('resultadoFinalProyecto')?.textContent||'0.0'} / 5.0`,`Nota definitiva: ${Number(state.notaFinal||0).toFixed(1)} / 5.0`,'','Lectura automática:',$('comentarioAutomaticoResultado')?.textContent||'El proyecto fue revisado con la rúbrica del simulador.','','Observaciones docentes:',valorCampo('observacionesDocente','Sin observaciones adicionales.'),'','Recomendación final:',lecturaNota(state.notaFinal)+'. Se recomienda revisar los módulos con menor desempeño y conservar soportes.','','© Typometiz · Denize Asceneth Torres Ruiz'].join('\n');$('informeDocenteGenerado').value=informe;setFeedback('feedbackDocente','green','Informe docente generado.');autoSave();}
+function actualizarAvances(showFeedback){if($('avanceVersionActual'))$('avanceVersionActual').textContent='V'+(state.version||1);if($('avanceUltimoGuardado'))$('avanceUltimoGuardado').textContent=state.lastSaved||'Guardado local automático';const tieneDatos=costos.length||nomina.length||materiales.length||accionesCampana.length||state.precioProyecto||state.notaFinal;if($('avanceEstadoDatos'))$('avanceEstadoDatos').textContent=tieneDatos?'Con información registrada':'Sin datos suficientes';if($('resumenTecnicoApp')){$('resumenTecnicoApp').value=['RESUMEN TÉCNICO DE LA APP','','Nombre: Simulador de Viabilidad Creativa','Versión: V'+(state.version||1),'Autora: Typometiz · Denize Asceneth Torres Ruiz','','Módulos incluidos:','- Login estudiante/docente','- Costos de operación','- Nómina y valor hora','- Calculadora de proyecto','- Balanza y punto de equilibrio','- Legal, contratos y propiedad intelectual','- Campaña, cotización y Gantt de implementación','- Resultado, rúbrica e insignias','- Trazabilidad y cheque creativo','- Panel docente','- Respaldo JSON y descarga HTML','','Notas:','- La clave docente no se guarda en localStorage ni en respaldos. ','- Los datos se guardan en localStorage del navegador.','- Para uso real con varios estudiantes se recomienda conexión posterior a Google Sheets o Firebase.','- El material tiene fines pedagógicos y no reemplaza asesoría jurídica profesional.'].join('\n');}if(showFeedback)setFeedback('feedbackAvances','green','Resumen actualizado.');}
+function saveState(show=true){
+  state.fields = getAllFields();
+  if(state.fields&&state.fields.cedulaUsuario) delete state.fields.cedulaUsuario;
+  state.costos = costos;
+  state.nomina = nomina;
+  state.materiales = materiales;
+  state.accionesCampana = accionesCampana;
+  state.lastSaved = new Date().toLocaleString('es-CO');
+  updateProgress();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  if(show) setAutosave('Guardado automático', false);
+  actualizarAvances(false);
+}
+
+function descargarJSON(){
+  saveState(false);
+  const dataObj=JSON.parse(JSON.stringify(state));
+  if(dataObj.fields) delete dataObj.fields.cedulaUsuario;
+  delete dataObj.cedulaUsuario;
+  const data = JSON.stringify(dataObj, null, 2);
+  const blob = new Blob([data], {type:'application/json;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'respaldo_simulador_v' + (state.version || 1) + '_' + slug($('nombreAgencia')?.value || 'agencia') + '.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  setFeedback('feedbackAvances','green','Respaldo JSON descargado correctamente.');
+}
+
+function descargarHTMLApp(){
+  saveState(false);
+  limpiarClaveLogin();
+  saveState(false);
+  const clone=document.documentElement.cloneNode(true);
+  const clave=clone.querySelector('#cedulaUsuario');
+  if(clave){clave.removeAttribute('value');clave.setAttribute('autocomplete','off');}
+  const html='<!DOCTYPE html>\n'+clone.outerHTML;
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='simulador_viabilidad_creativa_v'+(state.version||1)+'_'+slug($('nombreAgencia')?.value||'agencia')+'.html';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  setFeedback('feedbackAvances','green','Archivo HTML de la app descargado correctamente.');
+}
+function importarJSON(file){if(!file)return;const reader=new FileReader();reader.onload=function(){try{const data=JSON.parse(reader.result);state=Object.assign({},defaultState,data);if(state.fields)delete state.fields.cedulaUsuario;localStorage.setItem(STORAGE_KEY,JSON.stringify(state));alert('Respaldo restaurado. La app se recargará para aplicar los datos.');location.reload();}catch(e){setFeedback('feedbackAvances','red','No se pudo importar el respaldo. Revisa que sea un JSON válido.');}};reader.readAsText(file);}
+function crearNuevaVersion(){state.version=Number(state.version||1)+1;state.lastSaved=new Date().toLocaleString('es-CO');saveState(true);actualizarAvances(true);setFeedback('feedbackAvances','green','Nueva versión creada: V'+state.version+'.');}
+function limpiarDatosPrueba(){const ok=confirm('Esto borrará los datos guardados en este navegador. ¿Deseas continuar?');if(!ok)return;localStorage.removeItem(STORAGE_KEY);alert('Datos borrados. La app se recargará limpia.');location.reload();}
+function resumenParaSheets(evento){
+  return {
+    evento:evento||'trazabilidad',
+    fecha:new Date().toISOString(),
+    version:state.version||1,
+    rol:state.role||'estudiante',
+    documento:documentoSesionSeguro(),
+    grupo:valorCampo('nombreAgencia',''),
+    curso:valorCampo('cursoGrupo',''),
+    periodo:valorCampo('periodoGrupo',''),
+    integrantes:JSON.stringify(state.integrantes||[]),
+    progreso:state.progreso||0,
+    costos_count:costos.length,
+    nomina_count:nomina.length,
+    materiales_count:materiales.length,
+    acciones_campana_count:accionesCampana.length,
+    operacion_mensual:state.operacionMensual||0,
+    precio_proyecto:state.precioProyecto||0,
+    balance_score:state.balanceScore||0,
+    eco_score:state.ecoScore||0,
+    campana_total:state.campanaTotal||0,
+    nota_final:state.notaFinal===null?'':(state.notaFinal||0),
+    contrato_generado:$('contratoGeneradoLegal')&&$('contratoGeneradoLegal').value?'si':'no',
+    modo_implementacion:state.modoImplementacionCampana||'',
+    navegador:navigator.userAgent
+  };
+}
+
+
+function guardarPendienteSheets(payload){
+  try{
+    const key='typometiz_sheets_pendientes';
+    const arr=JSON.parse(localStorage.getItem(key)||'[]');
+    arr.push(payload);
+    localStorage.setItem(key,JSON.stringify(arr.slice(-50)));
+  }catch(e){}
+}
+async function enviarGoogleSheets(evento){
+  const url = ($('appsScriptUrl')?.value || '').trim();
+  if(!url){
+    setFeedback('feedbackGoogleSheets','orange','Primero pega la URL del Web App de Apps Script.');
+    if($('estadoGoogleSheets')) $('estadoGoogleSheets').value = 'Falta URL';
+    return false;
+  }
+  saveState(false);
+  const payload = Object.assign({tipo_tabla:'maestro'}, resumenParaSheets(evento || 'manual'));
+  try{
+    await fetch(url,{
+      method:'POST',
+      mode:'no-cors',
+      keepalive:true,
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify(payload)
+    });
+    if($('estadoGoogleSheets')) $('estadoGoogleSheets').value = 'Enviado / pendiente de verificar';
+    setFeedback('feedbackGoogleSheets','green','Se envió la información a Google Sheets. Si no aparece, revisa que Apps Script esté publicado como Web App con acceso “Cualquier usuario”.');
+    return true;
+  }catch(e){
+    guardarPendienteSheets(payload);
+    if($('estadoGoogleSheets')) $('estadoGoogleSheets').value = 'Error';
+    setFeedback('feedbackGoogleSheets','red','No se pudo enviar. Dejé el registro en cola local. Revisa URL, permisos y despliegue de Apps Script.');
+    return false;
+  }
+}
+
+function registroBase(tipoTabla){
+  return {
+    tipo_tabla:tipoTabla,
+    registro_id:'reg_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),
+    timestamp:new Date().toISOString(),
+    grupo_id:slug($('nombreAgencia')?.value||'sin_grupo'),
+    nombre_agencia:$('nombreAgencia')?.value||'',
+    curso:$('cursoGrupo')?.value||'',
+    periodo:$('periodoGrupo')?.value||'',
+    documento_login:documentoSesionSeguro(),
+    rol:state.role||'estudiante',
+    version:state.version||1,
+    user_agent:navigator.userAgent
+  };
+}
+
+async function guardarTablaSheets(tipoTabla,datos){
+  const url=($('appsScriptUrl')?.value||'').trim();
+  const payload=Object.assign({},registroBase(tipoTabla),datos||{});
+  if(!url){guardarPendienteSheets(payload);return false;}
+  try{
+    await fetch(url,{
+      method:'POST',
+      mode:'no-cors',
+      keepalive:true,
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify(payload)
+    });
+    if($('estadoGoogleSheets'))$('estadoGoogleSheets').value='Enviado / pendiente de verificar';
+    return true;
+  }catch(e){
+    guardarPendienteSheets(payload);
+    if($('estadoGoogleSheets'))$('estadoGoogleSheets').value='Error de envío';
+    return false;
+  }
+}
+
+function guardarSnapshotSheets(motivo){
+  guardarTablaSheets('snapshot',{
+    snapshot_json:JSON.stringify(state),
+    hash_aproximado:String(Date.now())+'_'+Math.random().toString(36).slice(2,8),
+    motivo_guardado:motivo||'autosave'
+  });
+}
+
+function guardarTrazabilidadSheets(modulo,accion,campo,anterior,nuevo,resumen){
+  guardarTablaSheets('trazabilidad',{
+    modulo:modulo||'',
+    accion_evento:accion||'',
+    campo_modificado:campo||'',
+    valor_anterior:anterior||'',
+    valor_nuevo:nuevo||'',
+    resumen_estado:resumen||'',
+    segundos_desde_inicio:Math.round((Date.now()-(window.__inicioSesion||Date.now()))/1000)
+  });
+}
+
+function guardarMaestroSheets(evento){
+  guardarTablaSheets('maestro',{
+    evento:evento||'actualizacion',
+    version_app:state.version||1,
+    documento_login:documentoSesionSeguro(),
+    integrantes_json:JSON.stringify(state.integrantes||[]),
+    progreso_pct:state.progreso||0,
+    estado_general:state.notaFinal===null?'sin_calificacion':(state.notaFinal>=4?'consolidado':'en_desarrollo'),
+    operacion_mensual:state.operacionMensual||0,
+    inversion_inicial:costos.filter(c=>c.tipo==='unico').reduce((a,c)=>a+(Number(c.valor||0)*(1+(Number(c.imprevisto||0)/100))),0),
+    precio_proyecto:state.precioProyecto||0,
+    punto_equilibrio_meses:$('puntoEquilibrioTiempo')?.textContent||'',
+    balance_score:state.balanceScore||0,
+    eco_score:state.ecoScore||0,
+    campana_total:state.campanaTotal||0,
+    nota_proceso:Number($('resultadoProceso')?.textContent||0),
+    nota_resultado:Number($('resultadoFinalProyecto')?.textContent||0),
+    nota_final:state.notaFinal===null?'':(state.notaFinal||0),
+    contrato_generado:$('contratoGeneradoLegal')?.value?'si':'no',
+    modo_implementacion:state.modoImplementacionCampana||'',
+    url_pdf_final:''
+  });
+}
+
+
+function estilosPDFDocumento(){
+  return `
+    <style>
+      body{font-family:Arial,sans-serif;color:#0b2540;line-height:1.32;margin:0;padding:0;background:#fff}
+      .pdf-wrap{width:100%;max-width:none;padding:8px 6px;background:#fff;box-sizing:border-box}
+      .pdf-header{border-bottom:2px solid #002b5b;padding-bottom:8px;margin-bottom:10px}
+      .pdf-header h1{font-size:18px;margin:0;color:#002b5b;text-transform:uppercase}
+      .pdf-header p{font-size:10px;color:#617184;margin:3px 0 0}
+      .pdf-logo{min-height:54px;border:1px dashed #b8c1cc;border-radius:8px;display:flex;align-items:center;justify-content:center;margin:8px 0;padding:6px;color:#64748b;text-align:center}
+      .pdf-logo img{max-height:62px;max-width:100%;object-fit:contain}
+      .pdf-section{border:1px solid #d6dee8;border-radius:10px;padding:9px;margin:8px 0;background:#fff;box-sizing:border-box;break-inside:auto;page-break-inside:auto}
+      .pdf-section h2{font-size:13px;margin:0 0 6px;color:#002b5b}
+      .pdf-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:6px 0}
+      .pdf-box{border-left:4px solid #003f73;background:#edf4fb;border-radius:7px;padding:7px;font-size:10.5px;word-break:break-word}
+      .pdf-box strong{display:block;color:#002b5b;margin-bottom:3px}
+      table{width:100%;border-collapse:collapse;margin-top:6px;font-size:9.5px;table-layout:fixed}
+      th{background:#0b2540;color:#fff;text-align:left;padding:5px;word-break:break-word}
+      td{border-bottom:1px solid #edf2f7;padding:5px;vertical-align:top;word-break:break-word}
+      pre{white-space:pre-wrap;font-family:Arial,sans-serif;font-size:10.5px;line-height:1.35;margin:0;word-break:break-word}
+      p{font-size:10.5px;margin:5px 0}
+      .pdf-footer{font-size:8.5px;color:#617184;margin-top:10px;border-top:1px solid #d6dee8;padding-top:6px}
+      img{max-width:100%;height:auto}
+      canvas{max-width:100%;border:1px solid #d6dee8;border-radius:8px;margin-top:6px}
+      @media print{.pdf-section{break-inside:auto;page-break-inside:auto}.pdf-grid{break-inside:auto;page-break-inside:auto}table{break-inside:auto}tr{break-inside:avoid;page-break-inside:avoid}}
+    </style>
+  `;
+}
+
+function logoPDFHTML(){
+  if(state.logoAgencia){
+    return '<div class="pdf-logo"><img src="'+state.logoAgencia+'" alt="Logo agencia"></div>';
+  }
+  return '<div class="pdf-logo">LOGO / MEMBRETE DE LA AGENCIA</div>';
+}
+
+function tablaAccionesCampanaPDF(){
+  if(!accionesCampana.length){
+    return '<p style="font-size:12px;color:#617184">No hay acciones de implementación registradas.</p>';
+  }
+  const filas = accionesCampana.map(a=>{
+    const fin = Number(a.inicio||1)+Number(a.duracion||1)-1;
+    return '<tr><td>'+escapeHTML(a.nombre||'Acción')+'</td><td>'+escapeHTML(a.canal||'')+'</td><td>Semana '+Number(a.inicio||1)+'</td><td>Semana '+fin+'</td><td>'+formatoCOP(a.costo||0)+'</td><td>'+escapeHTML(a.estado||'Programada')+'</td></tr>';
+  }).join('');
+  return '<table><thead><tr><th>Acción</th><th>Canal</th><th>Inicio</th><th>Fin</th><th>Costo</th><th>Estado</th></tr></thead><tbody>'+filas+'</tbody></table>';
+}
+
+function ganttPDFHTML(){
+  const canvas = $('graficoGanttCampana');
+  if(!canvas) return '<p style="font-size:12px;color:#617184">Cronograma no disponible.</p>';
+  try{
+    const img = canvas.toDataURL('image/png');
+    return '<img src="'+img+'" alt="Cronograma Gantt" style="width:100%;max-height:155mm;object-fit:contain;border:1px solid #d6dee8;border-radius:8px;margin-top:6px">';
+  }catch(e){
+    return '<p style="font-size:12px;color:#617184">No se pudo capturar el cronograma Gantt.</p>';
+  }
+}
+
+function crearDocumentoPDF(titulo, subtitulo, contenidoHTML){
+  const wrapper=document.createElement('div');
+  wrapper.className='pdf-wrap';
+  wrapper.innerHTML=estilosPDFDocumento()+
+    '<div class="pdf-header"><h1>'+escapeHTML(titulo)+'</h1><p>'+escapeHTML(subtitulo||'')+'</p></div>'+
+    logoPDFHTML()+
+    contenidoHTML+
+    '<div class="pdf-footer">© Typometiz · Denize Asceneth Torres Ruiz · Simulador de Viabilidad Creativa</div>';
+  document.body.appendChild(wrapper);
+  return wrapper;
+}
+
+function exportarDocumentoPDF(titulo, subtitulo, contenidoHTML, modulo){
+  if(!window.html2pdf){alert('No se pudo generar el PDF porque html2pdf no está cargado.');return;}
+  const wrapper=crearDocumentoPDF(titulo,subtitulo,contenidoHTML);
+  html2pdf().set({
+    margin:[5,5,7,5],
+    filename:nombreArchivoPDF(modulo),
+    image:{type:'jpeg',quality:.98},
+    html2canvas:{scale:1.6,useCORS:true,backgroundColor:'#ffffff',scrollY:0,windowWidth:1200},
+    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
+    pagebreak:{mode:['css','legacy']}
+  }).from(wrapper).save().then(()=>wrapper.remove()).catch(()=>wrapper.remove());
+}
+
+function pdfAnalisisLegal(){
+  analizarLegal();
+  const contenido = `
+    <div class="pdf-section">
+      <h2>Análisis de viabilidad legal</h2>
+      <div class="pdf-grid">
+        <div class="pdf-box"><strong>Tipo de empresa seleccionado</strong>${escapeHTML($('tipoEmpresa')?.selectedOptions?.[0]?.text || $('tipoEmpresa')?.value || '—')}</div>
+        <div class="pdf-box"><strong>Actividad</strong>${escapeHTML($('actividadEmpresa')?.value || '—')}</div>
+        <div class="pdf-box"><strong>Tipo de contratación</strong>${escapeHTML($('tipoContratoLegal')?.value || '—')}</div>
+        <div class="pdf-box"><strong>Protecciones seleccionadas</strong>${document.querySelectorAll('.pi-check:checked').length} de 4</div>
+      </div>
+      <div class="pdf-grid">
+        <div class="pdf-box"><strong>Figura sugerida</strong>${escapeHTML($('empresaSugerida')?.textContent || '—')}</div>
+        <div class="pdf-box"><strong>Nivel de formalización</strong>${escapeHTML($('formalizacionLegal')?.textContent || '—')}</div>
+        <div class="pdf-box"><strong>Protección PI</strong>${escapeHTML($('proteccionPI')?.textContent || '—')}</div>
+        <div class="pdf-box"><strong>Recomendación automática</strong>${escapeHTML($('feedbackLegal')?.textContent || '—')}</div>
+      </div>
+    </div>
+    <div class="pdf-section">
+      <h2>Nota pedagógica</h2>
+      <p style="font-size:12px">Este análisis tiene fines académicos y no reemplaza asesoría jurídica profesional. Su función es orientar decisiones iniciales de formalización, contratación y protección de propiedad intelectual.</p>
+    </div>
+  `;
+  exportarDocumentoPDF('Análisis legal', valorCampo('nombreAgencia','Proyecto creativo'), contenido, 'analisis_legal');
+}
+
+function pdfContratoLegal(){
+  const texto = ($('contratoGeneradoLegal')?.value || '').trim();
+  if(!texto){alert('Primero genera el contrato completo.');return;}
+  const contenido = `
+    <div class="pdf-section">
+      <h2>Contrato legal completo</h2>
+      <pre>${escapeHTML(texto)}</pre>
+    </div>
+  `;
+  exportarDocumentoPDF('Contrato legal', valorCampo('nombreAgencia','Proyecto creativo'), contenido, 'contrato_legal');
+}
+
+function pdfCalculoCampana(){
+  const datos = calcularCampana();
+  const contenido = `
+    <div class="pdf-section">
+      <h2>Cálculo técnico de campaña</h2>
+      <div class="pdf-grid">
+        <div class="pdf-box"><strong>Agencia / estudio</strong>${escapeHTML(valorCampo('agenciaCampana', valorCampo('nombreAgencia','—')))}</div>
+        <div class="pdf-box"><strong>Cliente</strong>${escapeHTML(valorCampo('clienteCampana','—'))}</div>
+        <div class="pdf-box"><strong>Producto o campaña</strong>${escapeHTML(valorCampo('productoCampana','—'))}</div>
+        <div class="pdf-box"><strong>Tipo de campaña</strong>${escapeHTML(valorCampo('tipoCampana','—'))}</div>
+        <div class="pdf-box"><strong>Complejidad</strong>${escapeHTML(valorCampo('complejidadCampana','—'))}</div>
+        <div class="pdf-box"><strong>Duración</strong>${escapeHTML(valorCampo('duracionProyecto','—'))} semana(s)</div>
+      </div>
+    </div>
+    <div class="pdf-section">
+      <h2>Resumen financiero</h2>
+      <div class="pdf-grid">
+        <div class="pdf-box"><strong>Presupuesto diseño</strong>${formatoCOP(datos.totalDiseno||0)}</div>
+        <div class="pdf-box"><strong>Producción / implementación</strong>${formatoCOP(datos.totalProduccion||0)}</div>
+        <div class="pdf-box"><strong>Total campaña</strong>${formatoCOP(datos.totalGeneral||0)}</div>
+        <div class="pdf-box"><strong>Presupuesto cliente</strong>${formatoCOP(limpiarNumero($('presupuestoClienteCampana')?.value||0))}</div>
+        <div class="pdf-box"><strong>Riesgo de ejecución</strong>${escapeHTML(datos.riesgo || $('riesgoCampanaResultado')?.textContent || '—')}</div>
+        <div class="pdf-box"><strong>Modo implementación</strong>${escapeHTML(state.modoImplementacionCampana || '—')}</div>
+      </div>
+    </div>
+    <div class="pdf-section">
+      <h2>Acciones de implementación</h2>
+      ${tablaAccionesCampanaPDF()}
+    </div>
+    <div class="pdf-section">
+      <h2>Cronograma Gantt</h2>
+      ${ganttPDFHTML()}
+    </div>
+  `;
+  exportarDocumentoPDF('Cálculo de campaña', valorCampo('nombreAgencia','Proyecto creativo'), contenido, 'calculo_campana');
+}
+
+function pdfCotizacionCampana(){
+  if(!($('cotizacionCampanaGenerada')?.value || '').trim()){
+    generarCotizacionCampana();
+  }else{
+    calcularCampana();
+  }
+  const texto = ($('cotizacionCampanaGenerada')?.value || '').trim();
+  if(!texto){alert('Primero genera la cotización para el cliente.');return;}
+  const contenido = `
+    <div class="pdf-section">
+      <h2>Cotización para cliente</h2>
+      <pre>${escapeHTML(texto)}</pre>
+    </div>
+    <div class="pdf-section">
+      <h2>Cronograma Gantt</h2>
+      ${ganttPDFHTML()}
+    </div>
+  `;
+  exportarDocumentoPDF('Cotización cliente', valorCampo('clienteCampana','Cliente'), contenido, 'cotizacion_cliente');
+}
+
+
+function nombreArchivoPDF(modulo){return 'simulador_'+modulo+'_v'+(state.version||1)+'_'+slug($('nombreAgencia')?.value||$('agenciaCampana')?.value||'agencia')+'.pdf';}
+function prepararClonPDF(el){
+  const clone=el.cloneNode(true);
+  clone.style.display='block';
+  clone.classList.add('active');
+  clone.style.width='100%';
+  clone.style.maxWidth='100%';
+  clone.style.margin='0';
+  clone.style.boxShadow='none';
+  clone.style.border='1px solid #d6dee8';
+  clone.style.background='#ffffff';
+  clone.querySelectorAll('button,.no-print,input[type="file"],label.teacher-only').forEach(n=>n.remove());
+  clone.querySelectorAll('textarea').forEach(t=>{
+    const div=document.createElement('div');
+    div.style.cssText='white-space:pre-wrap;border:1px solid #ccd6e0;border-radius:10px;padding:10px;min-height:40px;font-size:11px;line-height:1.35;background:#fff;';
+    div.textContent=t.value||'Sin información registrada.';
+    t.replaceWith(div);
+  });
+  clone.querySelectorAll('input,select').forEach(inp=>{
+    if(inp.type==='checkbox'){
+      const span=document.createElement('span');
+      span.textContent=inp.checked?'☑':'☐';
+      inp.replaceWith(span);
+      return;
+    }
+    const span=document.createElement('span');
+    span.style.cssText='display:block;border:1px solid #ccd6e0;border-radius:8px;padding:8px;background:#fff;min-height:24px;font-weight:500;';
+    span.textContent=inp.tagName==='SELECT' ? (inp.options[inp.selectedIndex]?.text || inp.value || '—') : (inp.value||'—');
+    inp.replaceWith(span);
+  });
+  clone.querySelectorAll('.scroll').forEach(n=>{n.style.overflow='visible';});
+  clone.querySelectorAll('table').forEach(t=>{t.style.fontSize='10px';t.style.pageBreakInside='auto';});
+  clone.querySelectorAll('tr,.feedback,.membrete').forEach(n=>{n.style.breakInside='avoid';n.style.pageBreakInside='avoid';});
+  return clone;
+}
+function descargarPDF(id,modulo){
+  const el=$(id);
+  if(!el||!window.html2pdf){alert('No se pudo generar el PDF. Revisa la conexión a internet para cargar html2pdf.');return;}
+  saveState(false);
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(255,255,255,.96);z-index:999999;overflow:auto;padding:18px;';
+  const wrapper=document.createElement('div');
+  wrapper.style.cssText='background:#fff;width:190mm;max-width:190mm;margin:0 auto;padding:10mm;color:#0b2540;font-family:Arial,sans-serif;';
+  const titulo=document.createElement('div');
+  titulo.innerHTML='<h1 style="font-size:18px;color:#002b5b;margin:0 0 8px 0">Simulador de Viabilidad Creativa</h1><p style="font-size:10px;color:#617184;margin:0 0 12px 0">© Typometiz · Denize Asceneth Torres Ruiz · Módulo: '+escapeHTML(modulo)+'</p>';
+  wrapper.appendChild(titulo);
+  wrapper.appendChild(prepararClonPDF(el));
+  overlay.appendChild(wrapper);
+  document.body.appendChild(overlay);
+  html2pdf().set({
+    margin:[8,8,10,8],
+    filename:nombreArchivoPDF(modulo),
+    image:{type:'jpeg',quality:.98},
+    html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff',scrollY:0,windowWidth:1200},
+    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
+    pagebreak:{mode:['css','legacy'],avoid:['tr','.feedback','.membrete']}
+  }).from(wrapper).save().then(()=>overlay.remove()).catch(err=>{console.error(err);overlay.remove();alert('No se pudo generar el PDF.');});
+}
+function descargarPDFTexto(textareaId,modulo,titulo){
+  const area=$(textareaId);
+  if(!area||!area.value.trim()){alert('Primero genera el documento.');return;}
+  const div=document.createElement('div');
+  div.style.cssText='position:fixed;left:-10000px;top:0;width:190mm;padding:12mm;background:#fff;color:#0b2540;font-family:Arial,sans-serif;line-height:1.45;z-index:-1;';
+  div.innerHTML='<h1 style="font-size:20px;color:#002b5b;margin-top:0">'+escapeHTML(titulo)+'</h1><pre style="white-space:pre-wrap;font-family:Arial,sans-serif;font-size:11px;line-height:1.45">'+escapeHTML(area.value)+'</pre><p style="font-size:10px;color:#617184;margin-top:24px">© Typometiz · Denize Asceneth Torres Ruiz</p>';
+  document.body.appendChild(div);
+  html2pdf().set({margin:10,filename:nombreArchivoPDF(modulo),image:{type:'jpeg',quality:.98},html2canvas:{scale:1.6,useCORS:true,backgroundColor:'#ffffff',scrollY:0,windowWidth:1200},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},pagebreak:{mode:['css','legacy']}}).from(div).save().then(()=>div.remove()).catch(err=>{console.error(err);div.remove();alert('No se pudo generar el PDF.');});
+}
+
+
+function limpiarCalificaciones(){
+  ['notaProcesoInvestigacion','notaProcesoSeguimiento','notaProcesoAvances','notaResultadoViabilidad','notaResultadoEstrategia','notaResultadoPresentacion','notaResultadoImplementacion'].forEach(id=>{const el=$(id); if(el) el.value='';});
+  resetResultadoEvaluacion('Calificaciones limpiadas. Ingresa valores entre 1.0 y 5.0 para calcular de nuevo.');
+  setFeedback('feedbackResultado','blue','Calificaciones limpiadas.');
+  guardarTrazabilidadSheets('Resultado','limpiar','calificaciones','','','Calificaciones limpiadas');
+}
+function borrarContrato(){
+  ['contratoGeneradoLegal','resumenContratoLegal'].forEach(id=>{const el=$(id); if(el){ if(el.tagName==='TEXTAREA') el.value=''; else {el.style.display='none'; el.innerHTML='';}}});
+  setFeedback('feedbackLegal','blue','Contrato borrado. Puedes generar uno nuevo.');
+  autoSave();
+}
+function borrarCotizacionCampana(){
+  const el=$('cotizacionCampanaGenerada'); if(el) el.value='';
+  setFeedback('feedbackCampana','blue','Cotización borrada. Puedes generar una nueva.');
+  autoSave();
+}
+function borrarCheque(){
+  const el=$('chequeCreativo'); if(el) el.style.display='none';
+  setFeedback('feedbackTrazabilidad','blue','Cheque creativo ocultado. Puedes generarlo nuevamente.');
+  autoSave();
+}
+function limpiarInformeDocente(){
+  const obs=$('observacionesDocente'); if(obs) obs.value='';
+  const inf=$('informeDocenteGenerado'); if(inf) inf.value='';
+  const tabla=$('docenteTablaRubrica'); if(tabla) tabla.innerHTML='';
+  setFeedback('feedbackDocente','blue','Informe docente limpiado.');
+  autoSave();
+}
+
+function runTests(){console.assert(limpiarNumero('1.234.567')===1234567,'limpiarNumero puntos');console.assert(slug('Agencia Ñandú Azul')==='agencia_nandu_azul','slug accents');console.assert(nombreArchivoPDF('costos').includes('simulador_costos_v'),'pdf filename');console.info('Pruebas internas OK');}
+document.getElementById('mobileMenuBtn')?.addEventListener('click',()=>$('navTabs')?.classList.toggle('mobile-open'));
+document.addEventListener('click',event=>{const pageBtn=event.target.closest('[data-page]');if(pageBtn){event.preventDefault();showPage(pageBtn.dataset.page||'home');return;}const roleBtn=event.target.closest('[data-role]');if(roleBtn){cerrarSesionPorCambioRol(roleBtn.dataset.role);return;}const action=event.target.closest('[data-action]')?.dataset.action;if(action==='agregar-integrante')addIntegrante();if(action==='ingresar')handleLogin();if(action==='agregar-costo'){
+  const nuevoCosto={tipo:$('tipoCosto').value,categoria:$('categoriaCosto').value,nombre:$('nombreCosto').value,valor:limpiarNumero($('valorCosto').value),imprevisto:Number($('imprevistoCosto').value||0)};
+  costos.push(nuevoCosto);
+  const totalCosto=Number(nuevoCosto.valor||0)*(1+(Number(nuevoCosto.imprevisto||0)/100));
+  guardarTablaSheets('costo',{tipo_costo:nuevoCosto.tipo,categoria:nuevoCosto.categoria,nombre_costo:nuevoCosto.nombre,valor_base:nuevoCosto.valor,imprevisto_pct:nuevoCosto.imprevisto,valor_total:totalCosto,clasificacion_sugerida:nuevoCosto.tipo,comentario_validacion:'Registro creado desde app'});
+  guardarTrazabilidadSheets('Costos','agregar','costo','',nuevoCosto.nombre,'Costo agregado');
+  $('nombreCosto').value='';$('valorCosto').value='';renderCostos();autoSave();
+}if(action==='agregar-nomina'){
+  const nuevoCargo={cargo:$('cargoNomina').value,tipo:$('tipoVinculacion').value,salario:limpiarNumero($('salarioNomina').value),cantidad:Number($('cantidadNomina').value||1),salarioMinimo:limpiarNumero($('salarioMinimo').value||1300000),subsidio:limpiarNumero($('subsidioTransporte').value||162000),aplicaSubsidio:$('aplicaSubsidio').value,arl:Number($('nivelARL').value||0)};
+  nomina.push(nuevoCargo);
+  const costoReal=costoRealNomina(nuevoCargo);
+  guardarTablaSheets('nomina',{cargo:nuevoCargo.cargo,tipo_vinculacion:nuevoCargo.tipo,salario_base:nuevoCargo.salario,cantidad_personas:nuevoCargo.cantidad,salario_minimo:nuevoCargo.salarioMinimo,subsidio_transporte:nuevoCargo.subsidio,aplica_subsidio:nuevoCargo.aplicaSubsidio,arl_pct:nuevoCargo.arl,costo_real_empresa:costoReal,valor_hora:costoReal/160,comentario_validacion:'Cargo registrado desde app'});
+  guardarTrazabilidadSheets('Nomina','agregar','cargo','',nuevoCargo.cargo,'Cargo agregado');
+  $('cargoNomina').value='';$('salarioNomina').value='';renderNomina();autoSave();
+}if(action==='sincronizar-nomina-costos'){const total=nomina.reduce((a,item)=>a+costoRealNomina(item),0);costos.push({tipo:'fijo',categoria:'Nómina',nombre:'Costo mensual de nómina',valor:total,imprevisto:5});renderCostos();autoSave();}if(action==='agregar-material'){
+  const nuevoMaterial={concepto:$('materialConcepto').value,cantidad:Number($('materialCantidad').value||1),valor:limpiarNumero($('materialValor').value)};
+  materiales.push(nuevoMaterial);
+  guardarTablaSheets('material',{nombre_proyecto:$('nombreProyecto')?.value||'',concepto:nuevoMaterial.concepto,cantidad:nuevoMaterial.cantidad,valor_unitario:nuevoMaterial.valor,valor_total:nuevoMaterial.cantidad*nuevoMaterial.valor,tipo_proveedor:'',comentario:'Material/proveedor registrado desde app'});
+  guardarTrazabilidadSheets('Proyecto','agregar','material','',nuevoMaterial.concepto,'Material agregado al proyecto');
+  $('materialConcepto').value='';$('materialCantidad').value=1;$('materialValor').value='';renderProyecto();calcularProyecto();
+}if(action==='calcular-proyecto'){
+  calcularProyecto();
+  guardarTablaSheets('proyecto',{nombre_proyecto:$('nombreProyecto')?.value||'',tipo_proyecto:$('tipoProyecto')?.value||'',rol_nomina_usado:$('rolProyecto')?.value||'',horas_trabajo:Number($('horasProyecto')?.value||0),valor_hora:valorHoraProyecto(),horas_software:Number($('horasSoftware')?.value||0),costo_nomina:limpiarNumero($('costoNominaProyecto')?.textContent||0),costo_software:limpiarNumero($('costoSoftwareProyecto')?.textContent||0),costo_materiales:limpiarNumero($('costoMaterialesProyecto')?.textContent||0),subtotal:limpiarNumero($('subtotalProyecto')?.textContent||0),utilidad_pct:Number($('utilidadProyecto')?.value||0),precio_sugerido:state.precioProyecto||0,ganancia_estimada:limpiarNumero($('gananciaProyecto')?.textContent||0),comentario_utilidad:$('feedbackProyecto')?.textContent||''});
+  guardarTablaSheets('balanza',{operacion_mensual:state.operacionMensual||0,precio_proyecto:state.precioProyecto||0,proyectos_minimos_mes:$('balanzaProyectosMinimos')?.textContent||'',inversion_inicial:limpiarNumero($('totalCostosUnicos')?.textContent||0),punto_equilibrio_meses:$('puntoEquilibrioTiempo')?.textContent||'',balance_score:state.balanceScore||0,estado_balanza:$('feedbackBalanza')?.textContent||'',eco_score:state.ecoScore||0,bono_eco:state.bonoEco||0,insignia_eco:$('insigniaEco')?.textContent||'',comentario:$('feedbackEco')?.textContent||''});
+  guardarMaestroSheets('calculo_proyecto');
+  guardarTrazabilidadSheets('Proyecto','calcular','precio_proyecto','',state.precioProyecto,'Precio del proyecto calculado');
+}if(action==='agregar-accion-campana'){
+  const nuevaAccion={nombre:$('accionCampanaNombre').value||'Acción de campaña',canal:$('accionCampanaCanal').value,inicio:Number($('accionCampanaInicio').value||1),duracion:Number($('accionCampanaDuracion').value||1),costo:limpiarNumero($('accionCampanaCosto').value),estado:'Programada'};
+  accionesCampana.push(nuevaAccion);
+  guardarTablaSheets('accion_campana',{accion:nuevaAccion.nombre,canal_medio:nuevaAccion.canal,semana_inicio:nuevaAccion.inicio,duracion_semanas:nuevaAccion.duracion,semana_fin:nuevaAccion.inicio+nuevaAccion.duracion-1,costo_estimado:nuevaAccion.costo,estado:nuevaAccion.estado,modo_implementacion:state.modoImplementacionCampana||''});
+  guardarTrazabilidadSheets('Campana','agregar','accion','',nuevaAccion.nombre,'Acción de campaña agregada');
+  $('accionCampanaNombre').value='';$('accionCampanaInicio').value=1;$('accionCampanaDuracion').value=1;$('accionCampanaCosto').value='';renderAccionesCampana();calcularCampana();autoSave();
+}if(action==='analizar-legal')analizarLegal();if(action==='generar-contrato'){
+  generarContratoCompleto();
+  guardarTablaSheets('legal',{tipo_empresa:$('tipoEmpresa')?.value||'',actividad:$('actividadEmpresa')?.value||'',tipo_contrato:$('tipoContratoLegal')?.value||'',pi_marca:document.querySelectorAll('.pi-check')[0]?.checked?'si':'no',pi_autor:document.querySelectorAll('.pi-check')[1]?.checked?'si':'no',pi_licencia:document.querySelectorAll('.pi-check')[2]?.checked?'si':'no',pi_datos:document.querySelectorAll('.pi-check')[3]?.checked?'si':'no',figura_sugerida:$('empresaSugerida')?.textContent||'',nivel_formalizacion:$('formalizacionLegal')?.textContent||'',proteccion_pi:$('proteccionPI')?.textContent||'',riesgo_legal_auto:$('feedbackLegal')?.textContent||'',contratante:$('contratanteLegal')?.value||'',id_contratante:$('idContratanteLegal')?.value||'',contratista:$('contratistaLegal')?.value||'',id_contratista:$('idContratistaLegal')?.value||'',objeto_contrato:$('objetoContratoLegal')?.value||'',valor_contrato:limpiarNumero($('valorContratoLegal')?.value||0),plazo:$('plazoContratoLegal')?.value||'',ciudad:$('ciudadContratoLegal')?.value||'',contrato_texto:$('contratoGeneradoLegal')?.value||''});
+  guardarMaestroSheets('contrato_generado');
+  guardarTrazabilidadSheets('Legal','generar','contrato','',$('tipoContratoLegal')?.value||'','Contrato generado');
+}if(action==='analizar-campana'){
+  const datosCampana=calcularCampana();
+  guardarTablaSheets('campana',{cliente:$('clienteCampana')?.value||'',producto_campana:$('productoCampana')?.value||'',tipo_campana:$('tipoCampana')?.value||'',complejidad:$('complejidadCampana')?.value||'',duracion_semanas:Number($('duracionProyecto')?.value||0),horas_estrategia:Number($('horasEstrategiaCampana')?.value||0),horas_diseno:Number($('horasDisenoCampana')?.value||0),horas_ajustes:Number($('horasAjustesCampana')?.value||0),valor_hora:limpiarNumero($('valorHoraCampana')?.value||0),utilidad_diseno_pct:Number($('utilidadDisenoCampana')?.value||0),total_diseno:datosCampana.totalDiseno||0,produccion_grafica:limpiarNumero($('produccionGraficaCampana')?.value||0),pauta_digital:limpiarNumero($('pautaDigitalCampana')?.value||0),audiovisual:limpiarNumero($('audiovisualCampana')?.value||0),tecnologia:limpiarNumero($('tecnologiaCampana')?.value||0),logistica:limpiarNumero($('logisticaCampana')?.value||0),otros_proveedores:limpiarNumero($('otrosProveedoresCampana')?.value||0),imprevistos_produccion_pct:Number($('imprevistosProduccionCampana')?.value||0),total_produccion:datosCampana.totalProduccion||0,total_general:datosCampana.totalGeneral||0,presupuesto_cliente:limpiarNumero($('presupuestoClienteCampana')?.value||0),modo_implementacion:state.modoImplementacionCampana||'',riesgo_ejecucion:datosCampana.riesgo||'',cotizacion_texto:$('cotizacionCampanaGenerada')?.value||''});
+  guardarMaestroSheets('campana_calculada');
+  guardarTrazabilidadSheets('Campana','calcular','total_campana','',datosCampana.totalGeneral,'Campaña calculada');
+}if(action==='generar-cotizacion-campana'){
+  generarCotizacionCampana();
+  guardarTablaSheets('campana',{cliente:$('clienteCampana')?.value||'',producto_campana:$('productoCampana')?.value||'',tipo_campana:$('tipoCampana')?.value||'',total_diseno:limpiarNumero($('totalDisenoCampana')?.textContent||0),total_produccion:limpiarNumero($('totalProduccionCampana')?.textContent||0),total_general:limpiarNumero($('totalGeneralCampana')?.textContent||0),presupuesto_cliente:limpiarNumero($('presupuestoClienteCampana')?.value||0),modo_implementacion:state.modoImplementacionCampana||'',riesgo_ejecucion:$('riesgoCampanaResultado')?.textContent||'',cotizacion_texto:$('cotizacionCampanaGenerada')?.value||''});
+  guardarTrazabilidadSheets('Campana','generar','cotizacion','','generada','Cotización generada');
+}if(action==='calcular-rubrica'){
+  const rubricaOk=calcularRubricaFinal();
+  if(!rubricaOk){return;}
+  guardarTablaSheets('resultado',{nota_proceso_investigacion:Number($('notaProcesoInvestigacion')?.value||0),nota_proceso_seguimiento:Number($('notaProcesoSeguimiento')?.value||0),nota_proceso_avances:Number($('notaProcesoAvances')?.value||0),nota_proceso_promedio:Number($('resultadoProceso')?.textContent||0),nota_resultado_viabilidad:Number($('notaResultadoViabilidad')?.value||0),nota_resultado_estrategia:Number($('notaResultadoEstrategia')?.value||0),nota_resultado_presentacion:Number($('notaResultadoPresentacion')?.value||0),nota_resultado_implementacion:Number($('notaResultadoImplementacion')?.value||0),nota_resultado_promedio:Number($('resultadoFinalProyecto')?.textContent||0),nota_definitiva:state.notaFinal||0,comentario_automatico:$('comentarioAutomaticoResultado')?.textContent||'',insignia_viabilidad:$('insigniaViabilidad')?.textContent||'',insignia_estrategia:$('insigniaEstrategia')?.textContent||'',insignia_implementacion:$('insigniaImplementacion')?.textContent||'',observacion_docente:$('observacionesDocente')?.value||''});
+  guardarMaestroSheets('rubrica_calculada');
+  guardarSnapshotSheets('rubrica_calculada');
+}if(action==='actualizar-trazabilidad')actualizarTrazabilidad();if(action==='generar-cheque')generarChequeCreativo();if(action==='actualizar-panel-docente')actualizarPanelDocente();if(action==='generar-informe-docente')generarInformeDocente();if(action==='pdf-docente'){descargarPDF('page-docente','docente');guardarTablaSheets('pdf',{modulo_pdf:'docente',nombre_archivo:nombreArchivoPDF('docente'),tipo_pdf:'panel_docente',generado_por:state.role,observaciones:'PDF docente exportado'});}if(action==='pdf-costos'){descargarPDF('page-costos','costos');guardarTablaSheets('pdf',{modulo_pdf:'costos',nombre_archivo:nombreArchivoPDF('costos'),tipo_pdf:'costos',generado_por:state.role,observaciones:'PDF costos exportado'});}if(action==='pdf-nomina'){descargarPDF('page-nomina','nomina');guardarTablaSheets('pdf',{modulo_pdf:'nomina',nombre_archivo:nombreArchivoPDF('nomina'),tipo_pdf:'nomina',generado_por:state.role,observaciones:'PDF nómina exportado'});}if(action==='pdf-proyecto'){descargarPDF('page-proyectos','proyecto');guardarTablaSheets('pdf',{modulo_pdf:'proyecto',nombre_archivo:nombreArchivoPDF('proyecto'),tipo_pdf:'proyecto',generado_por:state.role,observaciones:'PDF proyecto exportado'});}if(action==='pdf-analisis-legal'||action==='pdf-legal'){pdfAnalisisLegal();guardarTablaSheets('pdf',{modulo_pdf:'legal',nombre_archivo:nombreArchivoPDF('analisis_legal'),tipo_pdf:'analisis_legal',generado_por:state.role,observaciones:'PDF análisis legal exportado'});}
+if(action==='pdf-contrato-legal'){pdfContratoLegal();guardarTablaSheets('pdf',{modulo_pdf:'legal',nombre_archivo:nombreArchivoPDF('contrato_legal'),tipo_pdf:'contrato_legal',generado_por:state.role,observaciones:'PDF contrato legal exportado'});}if(action==='pdf-calculo-campana'||action==='pdf-campana'){pdfCalculoCampana();guardarTablaSheets('pdf',{modulo_pdf:'campana',nombre_archivo:nombreArchivoPDF('calculo_campana'),tipo_pdf:'calculo_campana',generado_por:state.role,observaciones:'PDF cálculo campaña exportado'});}
+if(action==='pdf-cotizacion-campana'){pdfCotizacionCampana();guardarTablaSheets('pdf',{modulo_pdf:'campana',nombre_archivo:nombreArchivoPDF('cotizacion_cliente'),tipo_pdf:'cotizacion_cliente',generado_por:state.role,observaciones:'PDF cotización cliente exportado'});}if(action==='pdf-resultado'){descargarPDF('page-resultado','resultado');guardarTablaSheets('pdf',{modulo_pdf:'resultado',nombre_archivo:nombreArchivoPDF('resultado'),tipo_pdf:'resultado',generado_por:state.role,observaciones:'PDF resultado exportado'});}if(action==='pdf-trazabilidad'){descargarPDF('page-trazabilidad','cierre');guardarTablaSheets('pdf',{modulo_pdf:'trazabilidad',nombre_archivo:nombreArchivoPDF('cierre'),tipo_pdf:'cierre',generado_por:state.role,observaciones:'PDF cierre exportado'});}if(action==='descargar-json')descargarJSON();if(action==='descargar-html-app')descargarHTMLApp();if(action==='nueva-version')crearNuevaVersion();if(action==='limpiar-prueba')limpiarDatosPrueba();if(action==='probar-google-sheets')enviarGoogleSheets('prueba_conexion');if(action==='enviar-google-sheets')enviarGoogleSheets('envio_manual');if(action==='borrar-todos-costos'){if(confirm('¿Borrar todos los costos registrados?')){costos.length=0;renderCostos();calcularBalanza();guardarTrazabilidadSheets('Costos','borrar_todo','costos','','','Costos borrados');autoSave();}}if(action==='borrar-toda-nomina'){if(confirm('¿Borrar toda la nómina registrada?')){nomina.length=0;renderNomina();renderProyecto();guardarTrazabilidadSheets('Nomina','borrar_todo','nomina','','','Nómina borrada');autoSave();}}if(action==='borrar-materiales'){if(confirm('¿Borrar todos los materiales/proveedores del proyecto?')){materiales.length=0;renderProyecto();calcularProyecto();guardarTrazabilidadSheets('Proyecto','borrar_todo','materiales','','','Materiales borrados');autoSave();}}if(action==='borrar-contrato')borrarContrato();if(action==='borrar-acciones-campana'){if(confirm('¿Borrar todas las acciones de campaña?')){accionesCampana.length=0;renderAccionesCampana();calcularCampana();guardarTrazabilidadSheets('Campana','borrar_todo','acciones','','','Acciones de campaña borradas');autoSave();}}if(action==='borrar-cotizacion-campana')borrarCotizacionCampana();if(action==='limpiar-calificaciones')limpiarCalificaciones();if(action==='borrar-cheque')borrarCheque();if(action==='limpiar-informe-docente')limpiarInformeDocente();const delInt=event.target.closest('[data-eliminar-integrante]')?.dataset.eliminarIntegrante;if(delInt!==undefined)removeIntegrante(Number(delInt));const delCosto=event.target.closest('[data-borrar-costo]')?.dataset.borrarCosto;if(delCosto!==undefined){costos.splice(Number(delCosto),1);renderCostos();autoSave();}const delNom=event.target.closest('[data-borrar-nomina]')?.dataset.borrarNomina;if(delNom!==undefined){nomina.splice(Number(delNom),1);renderNomina();autoSave();}const delMat=event.target.closest('[data-borrar-material]')?.dataset.borrarMaterial;if(delMat!==undefined){materiales.splice(Number(delMat),1);renderProyecto();calcularProyecto();autoSave();}const delAcc=event.target.closest('[data-borrar-accion-campana]')?.dataset.borrarAccionCampana;if(delAcc!==undefined){accionesCampana.splice(Number(delAcc),1);renderAccionesCampana();calcularCampana();autoSave();}});
+
+document.addEventListener('change',event=>{
+  if(event.target.classList.contains('eco-check')) calcularEco();
+
+  if(event.target.id === 'importarJsonInput'){
+    importarJSON(event.target.files && event.target.files[0]);
+  }
+
+  if(event.target.id === 'logoAgenciaInput' || event.target.classList.contains('logo-upload')){
+    const file = event.target.files && event.target.files[0];
+
+    if(file){
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        state.logoAgencia = reader.result;
+        renderLogoAgencia();
+        guardarSnapshotSheets('logo_actualizado');
+        autoSave();
+      };
+
+      reader.readAsDataURL(file);
+    }
+  }
+});
+
+document.addEventListener('focusout',event=>{if(event.target.matches('#valorCosto,#salarioNomina,#salarioMinimo,#subsidioTransporte,#valorHoraManual,#materialValor,#valorContratoLegal,#valorHoraCampana,#produccionGraficaCampana,#pautaDigitalCampana,#audiovisualCampana,#tecnologiaCampana,#logisticaCampana,#otrosProveedoresCampana,#presupuestoClienteCampana,#accionCampanaCosto'))aplicarFormatoMonedaInput(event.target);});
+document.addEventListener('focusin',event=>{if(event.target.matches('#valorCosto,#salarioNomina,#salarioMinimo,#subsidioTransporte,#valorHoraManual,#materialValor,#valorContratoLegal,#valorHoraCampana,#produccionGraficaCampana,#pautaDigitalCampana,#audiovisualCampana,#tecnologiaCampana,#logisticaCampana,#otrosProveedoresCampana,#presupuestoClienteCampana,#accionCampanaCosto'))event.target.value=limpiarNumero(event.target.value)||'';});
+document.addEventListener('input',event=>{if(event.target.dataset.integranteNombre!==undefined)state.integrantes[Number(event.target.dataset.integranteNombre)].nombre=event.target.value;if(event.target.dataset.integranteCedula!==undefined)state.integrantes[Number(event.target.dataset.integranteCedula)].cedula=event.target.value;autoSave();});
+restoreFields();['valorCosto','salarioNomina','salarioMinimo','subsidioTransporte','valorHoraManual','materialValor','valorContratoLegal','valorHoraCampana','produccionGraficaCampana','pautaDigitalCampana','audiovisualCampana','tecnologiaCampana','logisticaCampana','otrosProveedoresCampana','presupuestoClienteCampana','accionCampanaCosto'].forEach(id=>aplicarFormatoMonedaInput($(id)));renderIntegrantes();applyRole();updateProgress();setAutosave('Guardado automático',false);renderLogoAgencia();renderCostos();renderNomina();renderProyecto();renderAccionesCampana();calcularBalanza();dibujarGanttCampana(accionesCampana,'completa');actualizarAvances(false);runTests();window.typometizV2={getState:()=>state,showPage};
+})();
+
+</script>
+</body>
+</html>
