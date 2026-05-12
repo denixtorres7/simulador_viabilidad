@@ -83,10 +83,10 @@ body:not(.logged-in) .page:not(#page-home){display:none!important;}
   <span class="small-note">Este logo se aplicará a contratos, cotizaciones y cheque creativo.</span>
 </label><div style="font-size:.82rem;color:#617184">Proyecto / Agencia</div><div id="nombreChequeProyecto" style="font-size:1.5rem;font-weight:900">—</div><div class="grid" style="margin-top:20px"><div class="feedback green"><strong>Inversión proyectada</strong><br><span id="valorChequeInversion">$0</span></div><div class="feedback blue"><strong>Precio sugerido</strong><br><span id="valorChequeProyecto">$0</span></div><div class="feedback orange"><strong>Nota final</strong><br><span id="notaChequeProyecto">0.0</span></div></div><div class="soft-feedback" id="mensajeChequeProyecto">El simulador generará una lectura final.</div><div style="font-weight:900;color:#002b5b;margin-top:20px">© Typometiz · Denize Asceneth Torres Ruiz</div><div id="estadoChequeProyecto" style="font-size:1.15rem;font-weight:900;color:#166534">Proyecto viable</div></div></section>
 <section id="page-avances" class="page card teacher-only"><h2>9. Avances guardados y preparación de la app</h2><p class="small">Guarda respaldo, recupera avances, limpia pruebas y prepara la app para entrega o publicación.</p><div class="grid"><div class="feedback blue"><strong>Versión actual:</strong><br><span id="avanceVersionActual">V1</span></div><div class="feedback green"><strong>Último guardado:</strong><br><span id="avanceUltimoGuardado">—</span></div><div class="feedback orange"><strong>Estado de datos:</strong><br><span id="avanceEstadoDatos">En revisión</span></div></div><h3>Respaldo del proyecto</h3><div class="grid"><button type="button" class="secondary" data-action="descargar-json">Descargar respaldo JSON</button><button type="button" class="good" data-action="descargar-html-app">Descargar app HTML</button><button type="button" class="secondary" data-action="pdf-trazabilidad">Descargar informe final PDF</button></div><h3>Recuperar avance</h3><label>Subir respaldo JSON<input id="importarJsonInput" type="file" accept="application/json,.json"><span class="small-note">Carga el archivo JSON descargado previamente para restaurar el avance.</span></label><h3>Control de versión</h3><div class="grid"><button type="button" class="secondary" data-action="nueva-version">Crear nueva versión</button><button type="button" class="danger" data-action="limpiar-prueba">Limpiar datos de prueba</button></div><div id="feedbackAvances" class="feedback blue">Los avances se guardan automáticamente en este navegador.</div><h3>Conexión con Google Sheets</h3>
-<p class="small">https://script.google.com/macros/s/AKfycbyMIbqqsY35ZixAQHTIqey03SE4x4y-yT4ZYUHoDJCFHI9psWNamyyFkQx0D0rC2sAhZA/exec</p>
+<p class="small">https://script.google.com/macros/s/AKfycbwgYZDgVvcTfbV606jRYYf7OtuV2N45VbdlKsywkz6v_vVAtknX41ljCLyjbViSFB13Ag/exec</p>
 <div class="grid">
   <label>URL de Apps Script Web App
-    <input id="appsScriptUrl" type="url" value="https://script.google.com/macros/s/AKfycbyMIbqqsY35ZixAQHTIqey03SE4x4y-yT4ZYUHoDJCFHI9psWNamyyFkQx0D0rC2sAhZA/exec" readonly>
+    <input id="appsScriptUrl" type="url" value="https://script.google.com/macros/s/AKfycbwgYZDgVvcTfbV606jRYYf7OtuV2N45VbdlKsywkz6v_vVAtknX41ljCLyjbViSFB13Ag/exec" readonly>
   </label>
   <label>Estado de conexión
     <input id="estadoGoogleSheets" readonly value="Sin conectar">
@@ -108,7 +108,7 @@ body:not(.logged-in) .page:not(#page-home){display:none!important;}
 const STORAGE_KEY='typometiz_simulador_v12_base';
 const DOCENTE_KEY='Tr1c3r4t0$';
 const DEV_KEY='Tr1c3r4t0$';
-const APPS_SCRIPT_URL_FIJA='https://script.google.com/macros/s/AKfycbyMIbqqsY35ZixAQHTIqey03SE4x4y-yT4ZYUHoDJCFHI9psWNamyyFkQx0D0rC2sAhZA/exec';
+const APPS_SCRIPT_URL_FIJA='https://script.google.com/macros/s/AKfycbwgYZDgVvcTfbV606jRYYf7OtuV2N45VbdlKsywkz6v_vVAtknX41ljCLyjbViSFB13Ag/exec';
 const $=id=>document.getElementById(id);
 const qsa=sel=>Array.from(document.querySelectorAll(sel));
 const defaultState={version:1,role:'estudiante',loggedIn:false,fields:{},integrantes:[{nombre:'',cedula:''}],costos:[],nomina:[],materiales:[],accionesCampana:[],logoAgencia:'',precioProyecto:0,operacionMensual:0,balanceScore:0,ecoScore:0,bonoEco:0,progreso:0,notaBase:null,notaFinal:null,lastSaved:'',sessionRole:''};
@@ -141,69 +141,79 @@ if(state.loggedIn && state.sessionRole){
 function slug(text){return String(text||'agencia').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'_').replace(/^_|_$/g,'').toLowerCase()||'agencia';}
 
 
-function enviarSnapshotsModulosSheets(evento){
-  if(!APPS_SCRIPT_URL_FIJA || !state.loggedIn) return;
+function registroBaseSimple(tipoTabla){
+  return {
+    tipo_tabla:tipoTabla,
+    registro_id:'reg_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),
+    timestamp:new Date().toISOString(),
+    grupo_id:slug($('nombreAgencia')?.value||'sin_grupo'),
+    nombre_agencia:$('nombreAgencia')?.value||'',
+    curso:$('cursoGrupo')?.value||'',
+    periodo:$('periodoGrupo')?.value||'',
+    documento_login:typeof documentoSesionSeguro==='function'?documentoSesionSeguro():'',
+    rol:state.sessionRole||state.role||'estudiante',
+    version:state.version||1
+  };
+}
 
-  // Maestro: resumen general
-  guardarMaestroSheets(evento || 'autosave');
+function armarRegistrosBatchSheets(evento){
+  const ev=evento||'autosave';
+  const registros=[];
 
-  // Costos: snapshot consolidado de todos los costos
-  guardarTablaSheets('costo',{
-    evento:evento || 'autosave',
+  registros.push(Object.assign({}, registroBaseSimple('maestro'), {
+    evento:ev,
+    progreso_pct:state.progreso||0,
+    operacion_mensual:state.operacionMensual||0,
+    precio_proyecto:state.precioProyecto||0,
+    campana_total:state.campanaTotal||0,
+    nota_final:state.notaFinal===null?'':(state.notaFinal||0),
+    integrantes_json:JSON.stringify(state.integrantes||[])
+  }));
+
+  registros.push(Object.assign({}, registroBaseSimple('costo'), {
+    evento:ev,
     tipo_registro:'snapshot_costos',
     costos_json:JSON.stringify(costos),
     cantidad_costos:costos.length,
     total_fijos:limpiarNumero($('totalCostosFijos')?.textContent||0),
     total_variables:limpiarNumero($('totalCostosVariables')?.textContent||0),
     total_unicos:limpiarNumero($('totalCostosUnicos')?.textContent||0),
-    operacion_anual:limpiarNumero($('operacionAnual')?.textContent||0),
-    capital_minimo:limpiarNumero($('capitalMinimoOperacion')?.textContent||0),
-    capital_ideal:limpiarNumero($('capitalIdealOperacion')?.textContent||0)
-  });
+    operacion_anual:limpiarNumero($('operacionAnual')?.textContent||0)
+  }));
 
-  // Nómina
-  guardarTablaSheets('nomina',{
-    evento:evento || 'autosave',
+  registros.push(Object.assign({}, registroBaseSimple('nomina'), {
+    evento:ev,
     tipo_registro:'snapshot_nomina',
     nomina_json:JSON.stringify(nomina),
     cantidad_cargos:nomina.length,
     total_nomina_mensual:limpiarNumero($('totalNominaMensual')?.textContent||0),
     total_nomina_anual:limpiarNumero($('totalNominaAnual')?.textContent||0)
-  });
+  }));
 
-  // Proyecto
-  guardarTablaSheets('proyecto',{
-    evento:evento || 'autosave',
+  registros.push(Object.assign({}, registroBaseSimple('proyecto'), {
+    evento:ev,
     tipo_registro:'snapshot_proyecto',
     nombre_proyecto:$('nombreProyecto')?.value||'',
     tipo_proyecto:$('tipoProyecto')?.value||'',
     materiales_json:JSON.stringify(materiales),
-    costo_nomina:limpiarNumero($('costoNominaProyecto')?.textContent||0),
-    costo_software:limpiarNumero($('costoSoftwareProyecto')?.textContent||0),
-    costo_materiales:limpiarNumero($('costoMaterialesProyecto')?.textContent||0),
     subtotal:limpiarNumero($('subtotalProyecto')?.textContent||0),
     precio_sugerido:state.precioProyecto||0,
-    utilidad_pct:Number($('utilidadProyecto')?.value||0),
-    ganancia_estimada:limpiarNumero($('gananciaProyecto')?.textContent||0)
-  });
+    utilidad_pct:Number($('utilidadProyecto')?.value||0)
+  }));
 
-  // Balanza y ecodiseño
-  guardarTablaSheets('balanza',{
-    evento:evento || 'autosave',
+  registros.push(Object.assign({}, registroBaseSimple('balanza'), {
+    evento:ev,
     tipo_registro:'snapshot_balanza',
     operacion_mensual:state.operacionMensual||0,
     precio_proyecto:state.precioProyecto||0,
     proyectos_minimos_mes:$('balanzaProyectosMinimos')?.textContent||'',
     punto_equilibrio:$('puntoEquilibrioTiempo')?.textContent||'',
-    balance_score:state.balanceScore||0,
     eco_score:state.ecoScore||0,
-    bono_eco:state.bonoEco||0,
-    insignia_eco:$('insigniaEco')?.textContent||''
-  });
+    bono_eco:state.bonoEco||0
+  }));
 
-  // Legal
-  guardarTablaSheets('legal',{
-    evento:evento || 'autosave',
+  registros.push(Object.assign({}, registroBaseSimple('legal'), {
+    evento:ev,
     tipo_registro:'snapshot_legal',
     tipo_empresa:$('tipoEmpresa')?.value||'',
     actividad:$('actividadEmpresa')?.value||'',
@@ -211,39 +221,54 @@ function enviarSnapshotsModulosSheets(evento){
     figura_sugerida:$('empresaSugerida')?.textContent||'',
     nivel_formalizacion:$('formalizacionLegal')?.textContent||'',
     proteccion_pi:$('proteccionPI')?.textContent||'',
-    contrato_generado:$('contratoGeneradoLegal')?.value ? 'si' : 'no',
-    contrato_texto:$('contratoGeneradoLegal')?.value||''
-  });
+    contrato_generado:$('contratoGeneradoLegal')?.value?'si':'no'
+  }));
 
-  // Campaña
-  guardarTablaSheets('campana',{
-    evento:evento || 'autosave',
+  registros.push(Object.assign({}, registroBaseSimple('campana'), {
+    evento:ev,
     tipo_registro:'snapshot_campana',
     agencia:$('agenciaCampana')?.value||'',
     cliente:$('clienteCampana')?.value||'',
     producto_campana:$('productoCampana')?.value||'',
     tipo_campana:$('tipoCampana')?.value||'',
-    complejidad:$('complejidadCampana')?.value||'',
-    duracion_semanas:Number($('duracionProyecto')?.value||0),
     acciones_json:JSON.stringify(accionesCampana),
     total_diseno:limpiarNumero($('totalDisenoCampana')?.textContent||0),
     total_produccion:limpiarNumero($('totalProduccionCampana')?.textContent||0),
     total_general:limpiarNumero($('totalGeneralCampana')?.textContent||0),
-    presupuesto_cliente:limpiarNumero($('presupuestoClienteCampana')?.value||0),
-    riesgo_ejecucion:$('riesgoCampanaResultado')?.textContent||'',
-    cotizacion_generada:$('cotizacionCampanaGenerada')?.value ? 'si' : 'no',
-    cotizacion_texto:$('cotizacionCampanaGenerada')?.value||''
-  });
+    cotizacion_generada:$('cotizacionCampanaGenerada')?.value?'si':'no'
+  }));
 
-  // Trazabilidad general
-  guardarTablaSheets('trazabilidad',{
-    evento:evento || 'autosave',
+  registros.push(Object.assign({}, registroBaseSimple('trazabilidad'), {
+    evento:ev,
     tipo_registro:'snapshot_trazabilidad',
     estado_proyecto:$('estadoProyectoFinal')?.textContent||'',
     viabilidad_general:$('viabilidadProyectoFinal')?.textContent||'',
-    implementacion:$('implementacionProyectoFinal')?.textContent||'',
-    progreso_pct:state.progreso||0
-  });
+    implementacion:$('implementacionProyectoFinal')?.textContent||''
+  }));
+
+  return registros;
+}
+
+async function enviarBatchSheets(evento){
+  if(!APPS_SCRIPT_URL_FIJA || !state.loggedIn) return;
+  const payload={
+    tipo_tabla:'batch',
+    evento:evento||'autosave',
+    registros:armarRegistrosBatchSheets(evento||'autosave')
+  };
+
+  try{
+    await fetch(APPS_SCRIPT_URL_FIJA,{
+      method:'POST',
+      mode:'no-cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify(payload)
+    });
+    if($('estadoGoogleSheets')) $('estadoGoogleSheets').value='Enviado';
+    setFeedback('feedbackGoogleSheets','green','Datos enviados a Google Sheets.');
+  }catch(e){
+    if($('estadoGoogleSheets')) $('estadoGoogleSheets').value='Pendiente';
+  }
 }
 
 
@@ -253,9 +278,9 @@ function autoSave(){
   saveTimer=setTimeout(()=>{
     saveState(true);
     if(APPS_SCRIPT_URL_FIJA && state.loggedIn){
-      enviarSnapshotsModulosSheets('autosave');
+      enviarBatchSheets('autosave');
     }
-  },1500);
+  },1800);
 }
 
 
@@ -374,7 +399,7 @@ function handleLogin(){
   guardarMaestroSheets('login');
   guardarTrazabilidadSheets('login','ingreso','rol','',state.sessionRole,'Inicio de sesión');
 
-  if(APPS_SCRIPT_URL_FIJA) enviarSnapshotsModulosSheets('login');
+  if(APPS_SCRIPT_URL_FIJA) enviarBatchSheets('login');
 
   showPage(state.sessionRole==='docente'?'docente':'costos');
 }
@@ -861,7 +886,6 @@ async function guardarTablaSheets(tipoTabla,datos){
   if(!url) return;
 
   const payload=Object.assign({},registroBase(tipoTabla),datos||{});
-  payload.tipo_tabla = tipoTabla || payload.tipo_tabla || 'maestro';
 
   try{
     await fetch(url,{
@@ -1256,7 +1280,7 @@ document.addEventListener('click',event=>{const pageBtn=event.target.closest('[d
   guardarSnapshotSheets('rubrica_calculada');
 }if(action==='actualizar-trazabilidad')actualizarTrazabilidad();if(action==='generar-cheque')generarChequeCreativo();if(action==='actualizar-panel-docente')actualizarPanelDocente();if(action==='generar-informe-docente')generarInformeDocente();if(action==='pdf-docente'){descargarPDF('page-docente','docente');guardarTablaSheets('pdf',{modulo_pdf:'docente',nombre_archivo:nombreArchivoPDF('docente'),tipo_pdf:'panel_docente',generado_por:state.role,observaciones:'PDF docente exportado'});}if(action==='pdf-costos'){descargarPDF('page-costos','costos');guardarTablaSheets('pdf',{modulo_pdf:'costos',nombre_archivo:nombreArchivoPDF('costos'),tipo_pdf:'costos',generado_por:state.role,observaciones:'PDF costos exportado'});}if(action==='pdf-nomina'){descargarPDF('page-nomina','nomina');guardarTablaSheets('pdf',{modulo_pdf:'nomina',nombre_archivo:nombreArchivoPDF('nomina'),tipo_pdf:'nomina',generado_por:state.role,observaciones:'PDF nómina exportado'});}if(action==='pdf-proyecto'){descargarPDF('page-proyectos','proyecto');guardarTablaSheets('pdf',{modulo_pdf:'proyecto',nombre_archivo:nombreArchivoPDF('proyecto'),tipo_pdf:'proyecto',generado_por:state.role,observaciones:'PDF proyecto exportado'});}if(action==='pdf-analisis-legal'||action==='pdf-legal'){pdfAnalisisLegal();guardarTablaSheets('pdf',{modulo_pdf:'legal',nombre_archivo:nombreArchivoPDF('analisis_legal'),tipo_pdf:'analisis_legal',generado_por:state.role,observaciones:'PDF análisis legal exportado'});}
 if(action==='pdf-contrato-legal'){pdfContratoLegal();guardarTablaSheets('pdf',{modulo_pdf:'legal',nombre_archivo:nombreArchivoPDF('contrato_legal'),tipo_pdf:'contrato_legal',generado_por:state.role,observaciones:'PDF contrato legal exportado'});}if(action==='pdf-calculo-campana'||action==='pdf-campana'){pdfCalculoCampana();guardarTablaSheets('pdf',{modulo_pdf:'campana',nombre_archivo:nombreArchivoPDF('calculo_campana'),tipo_pdf:'calculo_campana',generado_por:state.role,observaciones:'PDF cálculo campaña exportado'});}
-if(action==='pdf-cotizacion-campana'){pdfCotizacionCampana();guardarTablaSheets('pdf',{modulo_pdf:'campana',nombre_archivo:nombreArchivoPDF('cotizacion_cliente'),tipo_pdf:'cotizacion_cliente',generado_por:state.role,observaciones:'PDF cotización cliente exportado'});}if(action==='pdf-resultado'){descargarPDF('page-resultado','resultado');guardarTablaSheets('pdf',{modulo_pdf:'resultado',nombre_archivo:nombreArchivoPDF('resultado'),tipo_pdf:'resultado',generado_por:state.role,observaciones:'PDF resultado exportado'});}if(action==='pdf-trazabilidad'){descargarPDF('page-trazabilidad','cierre');guardarTablaSheets('pdf',{modulo_pdf:'trazabilidad',nombre_archivo:nombreArchivoPDF('cierre'),tipo_pdf:'cierre',generado_por:state.role,observaciones:'PDF cierre exportado'});}if(action==='descargar-json')descargarJSON();if(action==='descargar-html-app')descargarHTMLApp();if(action==='nueva-version')crearNuevaVersion();if(action==='limpiar-prueba')limpiarDatosPrueba();if(action==='probar-google-sheets'){enviarSnapshotsModulosSheets('prueba_conexion');setFeedback('feedbackGoogleSheets','green','Prueba enviada a hojas separadas.');}if(action==='enviar-google-sheets'){enviarSnapshotsModulosSheets('envio_manual');setFeedback('feedbackGoogleSheets','green','Trazabilidad enviada a hojas separadas.');}if(action==='borrar-todos-costos'){if(confirm('¿Borrar todos los costos registrados?')){costos.length=0;renderCostos();calcularBalanza();guardarTrazabilidadSheets('Costos','borrar_todo','costos','','','Costos borrados');autoSave();}}if(action==='borrar-toda-nomina'){if(confirm('¿Borrar toda la nómina registrada?')){nomina.length=0;renderNomina();renderProyecto();guardarTrazabilidadSheets('Nomina','borrar_todo','nomina','','','Nómina borrada');autoSave();}}if(action==='borrar-materiales'){if(confirm('¿Borrar todos los materiales/proveedores del proyecto?')){materiales.length=0;renderProyecto();calcularProyecto();guardarTrazabilidadSheets('Proyecto','borrar_todo','materiales','','','Materiales borrados');autoSave();}}if(action==='borrar-contrato')borrarContrato();if(action==='borrar-acciones-campana'){if(confirm('¿Borrar todas las acciones de campaña?')){accionesCampana.length=0;renderAccionesCampana();calcularCampana();guardarTrazabilidadSheets('Campana','borrar_todo','acciones','','','Acciones de campaña borradas');autoSave();}}if(action==='borrar-cotizacion-campana')borrarCotizacionCampana();if(action==='limpiar-calificaciones')limpiarCalificaciones();if(action==='borrar-cheque')borrarCheque();if(action==='limpiar-informe-docente')limpiarInformeDocente();const delInt=event.target.closest('[data-eliminar-integrante]')?.dataset.eliminarIntegrante;if(delInt!==undefined)removeIntegrante(Number(delInt));const delCosto=event.target.closest('[data-borrar-costo]')?.dataset.borrarCosto;if(delCosto!==undefined){costos.splice(Number(delCosto),1);renderCostos();autoSave();}const delNom=event.target.closest('[data-borrar-nomina]')?.dataset.borrarNomina;if(delNom!==undefined){nomina.splice(Number(delNom),1);renderNomina();autoSave();}const delMat=event.target.closest('[data-borrar-material]')?.dataset.borrarMaterial;if(delMat!==undefined){materiales.splice(Number(delMat),1);renderProyecto();calcularProyecto();autoSave();}const delAcc=event.target.closest('[data-borrar-accion-campana]')?.dataset.borrarAccionCampana;if(delAcc!==undefined){accionesCampana.splice(Number(delAcc),1);renderAccionesCampana();calcularCampana();autoSave();}});
+if(action==='pdf-cotizacion-campana'){pdfCotizacionCampana();guardarTablaSheets('pdf',{modulo_pdf:'campana',nombre_archivo:nombreArchivoPDF('cotizacion_cliente'),tipo_pdf:'cotizacion_cliente',generado_por:state.role,observaciones:'PDF cotización cliente exportado'});}if(action==='pdf-resultado'){descargarPDF('page-resultado','resultado');guardarTablaSheets('pdf',{modulo_pdf:'resultado',nombre_archivo:nombreArchivoPDF('resultado'),tipo_pdf:'resultado',generado_por:state.role,observaciones:'PDF resultado exportado'});}if(action==='pdf-trazabilidad'){descargarPDF('page-trazabilidad','cierre');guardarTablaSheets('pdf',{modulo_pdf:'trazabilidad',nombre_archivo:nombreArchivoPDF('cierre'),tipo_pdf:'cierre',generado_por:state.role,observaciones:'PDF cierre exportado'});}if(action==='descargar-json')descargarJSON();if(action==='descargar-html-app')descargarHTMLApp();if(action==='nueva-version')crearNuevaVersion();if(action==='limpiar-prueba')limpiarDatosPrueba();if(action==='probar-google-sheets'){enviarBatchSheets('prueba_conexion');}if(action==='enviar-google-sheets'){enviarBatchSheets('envio_manual');}if(action==='borrar-todos-costos'){if(confirm('¿Borrar todos los costos registrados?')){costos.length=0;renderCostos();calcularBalanza();guardarTrazabilidadSheets('Costos','borrar_todo','costos','','','Costos borrados');autoSave();}}if(action==='borrar-toda-nomina'){if(confirm('¿Borrar toda la nómina registrada?')){nomina.length=0;renderNomina();renderProyecto();guardarTrazabilidadSheets('Nomina','borrar_todo','nomina','','','Nómina borrada');autoSave();}}if(action==='borrar-materiales'){if(confirm('¿Borrar todos los materiales/proveedores del proyecto?')){materiales.length=0;renderProyecto();calcularProyecto();guardarTrazabilidadSheets('Proyecto','borrar_todo','materiales','','','Materiales borrados');autoSave();}}if(action==='borrar-contrato')borrarContrato();if(action==='borrar-acciones-campana'){if(confirm('¿Borrar todas las acciones de campaña?')){accionesCampana.length=0;renderAccionesCampana();calcularCampana();guardarTrazabilidadSheets('Campana','borrar_todo','acciones','','','Acciones de campaña borradas');autoSave();}}if(action==='borrar-cotizacion-campana')borrarCotizacionCampana();if(action==='limpiar-calificaciones')limpiarCalificaciones();if(action==='borrar-cheque')borrarCheque();if(action==='limpiar-informe-docente')limpiarInformeDocente();const delInt=event.target.closest('[data-eliminar-integrante]')?.dataset.eliminarIntegrante;if(delInt!==undefined)removeIntegrante(Number(delInt));const delCosto=event.target.closest('[data-borrar-costo]')?.dataset.borrarCosto;if(delCosto!==undefined){costos.splice(Number(delCosto),1);renderCostos();autoSave();}const delNom=event.target.closest('[data-borrar-nomina]')?.dataset.borrarNomina;if(delNom!==undefined){nomina.splice(Number(delNom),1);renderNomina();autoSave();}const delMat=event.target.closest('[data-borrar-material]')?.dataset.borrarMaterial;if(delMat!==undefined){materiales.splice(Number(delMat),1);renderProyecto();calcularProyecto();autoSave();}const delAcc=event.target.closest('[data-borrar-accion-campana]')?.dataset.borrarAccionCampana;if(delAcc!==undefined){accionesCampana.splice(Number(delAcc),1);renderAccionesCampana();calcularCampana();autoSave();}});
 
 document.addEventListener('change',event=>{
   if(event.target.classList.contains('eco-check')) calcularEco();
