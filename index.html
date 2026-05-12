@@ -139,7 +139,22 @@ if(state.loggedIn && state.sessionRole){
 }
 function slug(text){return String(text||'agencia').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'_').replace(/^_|_$/g,'').toLowerCase()||'agencia';}
 
-function autoSave(){setAutosave('Guardando cambios...',true);clearTimeout(saveTimer);saveTimer=setTimeout(()=>saveState(true),350);}
+function autoSave(){
+
+  setAutosave('Guardando cambios...',true);
+
+  clearTimeout(saveTimer);
+
+  saveTimer=setTimeout(async ()=>{
+
+    saveState(true);
+
+    if(valorCampo('appsScriptUrl','')){
+      await enviarGoogleSheets('autosave');
+    }
+
+  },800);
+}
 function showPage(page){
   const teacherPages=['docente','resultado','trazabilidad','avances'];
   const isTeacherPage=teacherPages.includes(page);
