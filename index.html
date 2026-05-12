@@ -685,33 +685,59 @@ function guardarPendienteSheets(payload){
   }catch(e){}
 }
 async function enviarGoogleSheets(evento){
+
   const url = ($('appsScriptUrl')?.value || '').trim();
+
   if(!url){
-    setFeedback('feedbackGoogleSheets','orange','Primero pega la URL del Web App de Apps Script.');
-    if($('estadoGoogleSheets')) $('estadoGoogleSheets').value = 'Falta URL';
-    return false;
+    setFeedback('feedbackGoogleSheets','orange','Falta URL de Apps Script.');
+    return;
   }
+
   saveState(false);
-  const payload = Object.assign({tipo_tabla:'maestro'}, resumenParaSheets(evento || 'manual'));
+
+  const payload = resumenParaSheets(evento || 'manual');
+
   try{
-    await fetch(url,{
+
+    const response = await fetch(url,{
       method:'POST',
-      mode:'no-cors',
-      keepalive:true,
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      headers:{
+        'Content-Type':'application/json'
+      },
       body:JSON.stringify(payload)
     });
-    if($('estadoGoogleSheets')) $('estadoGoogleSheets').value = 'Enviado / pendiente de verificar';
-    setFeedback('feedbackGoogleSheets','green','Se envió la información a Google Sheets. Si no aparece, revisa que Apps Script esté publicado como Web App con acceso “Cualquier usuario”.');
-    return true;
-  }catch(e){
-    guardarPendienteSheets(payload);
-    if($('estadoGoogleSheets')) $('estadoGoogleSheets').value = 'Error';
-    setFeedback('feedbackGoogleSheets','red','No se pudo enviar. Dejé el registro en cola local. Revisa URL, permisos y despliegue de Apps Script.');
-    return false;
+
+    const result = await response.json();
+
+    if(result.success){
+      $('estadoGoogleSheets').value='Conectado';
+      setFeedback(
+        'feedbackGoogleSheets',
+        'green',
+        'Datos enviados correctamente a Google Sheets.'
+      );
+    } else {
+      $('estadoGoogleSheets').value='Error';
+      setFeedback(
+        'feedbackGoogleSheets',
+        'red',
+        'Apps Script respondió con error.'
+      );
+    }
+
+  } catch(error){
+
+    $('estadoGoogleSheets').value='Error';
+
+    setFeedback(
+      'feedbackGoogleSheets',
+      'red',
+      'No se pudo conectar con Google Sheets.'
+    );
+
+    console.error(error);
   }
 }
-
 function registroBase(tipoTabla){
   return {
     tipo_tabla:tipoTabla,
