@@ -86,7 +86,7 @@ body:not(.logged-in) .page:not(#page-home){display:none!important;}
 <p class="small">https://script.google.com/macros/s/AKfycbyMIbqqsY35ZixAQHTIqey03SE4x4y-yT4ZYUHoDJCFHI9psWNamyyFkQx0D0rC2sAhZA/exec</p>
 <div class="grid">
   <label>URL de Apps Script Web App
-    <input id="appsScriptUrl" type="url" value="https://script.google.com/macros/s/AKfycbw_celP4Jel9iZ0-TFu6Dr0SBEMHkwxA71WG9XieJLJWESi0MJYBN-uqngnGmkwju-22Q/exec" readonly>
+    <input id="appsScriptUrl" type="url" value="https://script.google.com/macros/s/AKfycbyMIbqqsY35ZixAQHTIqey03SE4x4y-yT4ZYUHoDJCFHI9psWNamyyFkQx0D0rC2sAhZA/exec" readonly>
   </label>
   <label>Estado de conexión
     <input id="estadoGoogleSheets" readonly value="Sin conectar">
@@ -96,7 +96,7 @@ body:not(.logged-in) .page:not(#page-home){display:none!important;}
   <button type="button" class="secondary" data-action="probar-google-sheets">Probar conexión</button>
   <button type="button" class="good" data-action="enviar-google-sheets">Enviar trazabilidad a Google Sheets</button>
 </div>
-<div id="feedbackGoogleSheets" class="feedback blue">La app enviará datos a Google Sheets usando Apps Script. Por seguridad del navegador, verifica el registro directamente en la hoja.</div>
+<div id="feedbackGoogleSheets" class="feedback blue">La app enviará datos automáticamente a Google Sheets usando Apps Script. Verifica los registros en las hojas Maestro, Costos, Proyecto, Campana y Trazabilidad.</div>
 
 <h3>Resumen técnico de entrega</h3><textarea id="resumenTecnicoApp" style="min-height:260px" readonly></textarea></section>
 <section id="page-docente" class="page card teacher-only"><h2>Panel docente</h2><p class="small">Consolidado docente del grupo.</p><div class="grid"><div class="feedback blue"><strong>Grupo / agencia:</strong><br><span id="docenteNombreGrupo">—</span></div><div class="feedback green"><strong>Nota definitiva:</strong><br><span id="docenteNotaFinal">0.0</span></div><div class="feedback orange"><strong>Estado:</strong><br><span id="docenteEstadoProyecto">Pendiente</span></div></div><h3>Integrantes</h3><div class="scroll"><table><thead><tr><th>Nombre</th><th>Documento</th></tr></thead><tbody id="docenteTablaIntegrantes"></tbody></table></div><h3>Rúbrica docente completa</h3><div class="scroll"><table><thead><tr><th>Componente</th><th>Peso</th><th>Indicador</th><th>Nota</th><th>Lectura</th></tr></thead><tbody id="docenteTablaRubrica"></tbody></table></div><h3>Observaciones docentes</h3><textarea id="observacionesDocente"></textarea><div class="grid" style="margin-top:18px"><button type="button" class="secondary" data-action="actualizar-panel-docente">Actualizar panel docente</button><button type="button" class="good" data-action="generar-informe-docente">Generar informe</button><button type="button" class="secondary" data-action="pdf-docente">Bajar PDF docente</button><button type="button" class="danger" data-action="limpiar-informe-docente">Limpiar informe</button></div><div id="feedbackDocente" class="feedback blue">Actualiza el panel para consolidar la evaluación.</div><h3>Informe para estudiantes</h3><textarea id="informeDocenteGenerado" style="min-height:340px"></textarea></section>
@@ -129,7 +129,7 @@ function aplicarFormatoMonedaInput(input){if(!input)return;const n=limpiarNumero
 function escapeHTML(v){return String(v||'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
 function setFeedback(id,color,text){const el=$(id);if(!el)return;el.className='feedback '+color;el.textContent=text;}
 function setAutosave(text,pending){const el=$('autosaveStatus');if(!el)return;el.textContent=text;el.classList.toggle('pending',!!pending);}
-function getAllFields(){const data={};qsa('input,select,textarea').forEach(el=>{if(el.id&&el.type!=='file'&&el.id!=='cedulaUsuario')data[el.id]=el.value;});return data;}
+function getAllFields(){const data={};qsa('input,select,textarea').forEach(el=>{if(el.id&&el.type!=='file'&&el.type!=='password'&&el.id!=='cedulaUsuario'&&el.id!=='appsScriptUrl')data[el.id]=el.value;});return data;}
 function restoreFields(){Object.entries(state.fields||{}).forEach(([id,value])=>{if(id==='cedulaUsuario')return;const el=$(id);if(el)el.value=value;});if($('cedulaUsuario'))$('cedulaUsuario').value='';}if(state.fields&&state.fields.cedulaUsuario){delete state.fields.cedulaUsuario;localStorage.setItem(STORAGE_KEY,JSON.stringify(state));}
 if(state.loggedIn && state.sessionRole){
   document.body.classList.add('logged-in');
@@ -671,13 +671,10 @@ async function enviarGoogleSheets(evento){
   }
 
   saveState(false);
-  const payload = resumenParaSheets(evento || 'manual');
 
-  /*
-    Apps Script no responde con encabezados CORS personalizados.
-    Por eso usamos no-cors + text/plain.
-    El navegador no puede leer la respuesta, pero Apps Script sí recibe el POST.
-  */
+  const payload = resumenParaSheets(evento || 'autosave');
+  payload.tipo_tabla = payload.tipo_tabla || 'maestro';
+
   try{
     await fetch(url,{
       method:'POST',
@@ -687,11 +684,11 @@ async function enviarGoogleSheets(evento){
     });
 
     if($('estadoGoogleSheets')) $('estadoGoogleSheets').value='Enviado';
-    setFeedback('feedbackGoogleSheets','green','Datos enviados a Google Sheets. Verifica la hoja para confirmar el registro.');
+    setFeedback('feedbackGoogleSheets','green','Datos enviados a Google Sheets. Verifica la hoja Maestro.');
 
   }catch(error){
     if($('estadoGoogleSheets')) $('estadoGoogleSheets').value='Pendiente';
-    setFeedback('feedbackGoogleSheets','orange','No se pudo confirmar el envío. Revisa la URL /exec, permisos y la hoja.');
+    setFeedback('feedbackGoogleSheets','orange','No se pudo confirmar el envío. Revisa la URL /exec y permisos.');
   }
 }
 
@@ -716,6 +713,7 @@ async function guardarTablaSheets(tipoTabla,datos){
   if(!url) return;
 
   const payload=Object.assign({},registroBase(tipoTabla),datos||{});
+  payload.tipo_tabla = tipoTabla || payload.tipo_tabla || 'maestro';
 
   try{
     await fetch(url,{
